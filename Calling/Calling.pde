@@ -79,8 +79,7 @@ void setup() {
   
   makeTowerParts();
   
-  curMilli = millis();
-  lastTrailMilli = millis();
+
 
   // we pass this to Minim so that it can load files from the data directory
   minim = new Minim(this);
@@ -104,12 +103,21 @@ void setup() {
   // play the file from start to finish.
   // if you want to play the file again, 
   // you need to call rewind() first.
-  birds1.rewind();
+  
   myMovie = new Movie(this, "leavesfalling.mp4"); //sets myMovie to the leaves falling video
   myMovie.noLoop(); //makes the video not loop
-  myMovie.play();   //sets the video up to play
+  
+  gameRestart();
+}
 
+void gameRestart(){
+  state = 0;
+  myMovie.jump(0);
+  myMovie.play();   //sets the video up to play
+  curMilli = millis();
+  lastTrailMilli = millis();
   //Play until end of movie
+  birds1.rewind();
   birds1.loop();
 }
 
@@ -181,7 +189,7 @@ void doFail(){
 void draw() {  
     background(0);
     
-    println(mouseX +", " + mouseY);
+    //println(mouseX +", " + mouseY);
     if(millis() - lastTrailMilli > 100){
       lastTrailMilli = millis();
       float mouseDist = sqrt((mouseX-lastMouseX)*(mouseX-lastMouseX) +
@@ -289,4 +297,9 @@ void movieEvent(Movie m) {
   m.read();                              //reads in the next frame
 }
 
+void mouseClicked() {
+  
+  gameRestart();
+  println("clicked");
+}
 
