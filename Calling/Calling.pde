@@ -134,36 +134,37 @@ void gameRestart(){
 }
 
 void makeTowerParts(){
-  mTowerParts = new towerPart[108];
-  int xstart=634;
-  int ystart=234;
-  int xextent = 704;
- 
-  int x=xstart;
-  int y=ystart;
-  int w = (xextent-xstart)/2;
-  int h = 20;
-  int vpadding = -7;
-  int hpadding = 0;
-  for(int i=0; i<54; i++){
-    if(x+w > xextent){
-      x = xstart;
-      y = y + h + vpadding;
-    }
-    mTowerParts[i] = new towerPart(x,y,w,h,brickImgs[(int)random(0,6)]);
-    x = x + w + hpadding;
-  }
-  xextent = xextent + (xextent-xstart);
-  xstart = 704;
-  x=xstart;
-  y=ystart;
-  for(int i=54; i<108; i++){
-    if(x+w > xextent){
-      x = xstart;
-      y = y + h + vpadding;
-    }
-    mTowerParts[i] = new towerPart(x,y,w,h,brickImgs[(int)random(6,12)]);
-    x = x + w + hpadding;
+  mTowerParts = new towerPart[7*6];
+  
+  int xstart=185;
+  int ystart=375;
+
+  int x = xstart;
+  int y = ystart;
+  for(int i=0; i<7; i++){
+    x += 16;
+    y -= 10;
+    mTowerParts[i*6+0] = new towerPart(x,y,32,20,brickImgs[(int)random(0,6)]);
+    x += 3*16;
+    y -= 5;
+    mTowerParts[i*6+1] = new towerPart(x,y,32,20,brickImgs[(int)random(6,12)]);
+    x += 2*16;
+    y +=10;
+    mTowerParts[i*6+2] = new towerPart(x,y,32,20,brickImgs[(int)random(6,12)]);
+    x += 2*16;
+    y += 10;
+    
+    x=xstart;
+    y += 5;
+    mTowerParts[i*6+3] = new towerPart(x,y,32,20,brickImgs[(int)random(0,6)]);
+    x += 2*16;
+    y -= 10;
+    mTowerParts[i*6+4] = new towerPart(x,y,32,20,brickImgs[(int)random(0,6)]);
+    x += 3*16;
+    y += 5;
+    mTowerParts[i*6+5] = new towerPart(x,y,32,20,brickImgs[(int)random(6,12)]);
+    y += 25;
+    x = xstart;
   }
   
   for(int i=0;i<mTowerParts.length; i++){
@@ -211,11 +212,11 @@ void doWin(){
 }
 
 void draw() {  
-    background(0);
+    background(255);
     
     timePerBlock = baseTimePerBlock - lastSuccess*15;
     
-    //println(mouseX +", " + mouseY);
+    println(mouseX +", " + mouseY);
     if(millis() - lastTrailMilli > 100){
       lastTrailMilli = millis();
       float mouseDist = sqrt((mouseX-lastMouseX)*(mouseX-lastMouseX) +
@@ -269,6 +270,10 @@ void draw() {
        }
     
     for(int i=0;i<mTowerParts.length;i++){
+      /*if(mTowerParts[i] != null){
+        image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
+      }*/
+      
       if(lastSuccess == 0 && (i == 0 || i == 1)){
         tint(64,255,64);
         image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
@@ -292,10 +297,32 @@ void draw() {
   
   if(state == 0){
     playVideo(myMovie); //Call this method to play the movie
+  }  
     
-    tint(255,255,255,255);
-    image(maskImg,0,0,800,600);
-  } 
+  float proportion = (prevSpeed - speedMin)/(speedMax-speedMin);
+    color c = color(0,255,0);
+    if(proportion > 0.6){
+      c = color(255,128,0);
+    } else if(proportion > 0.8){
+      c = color(255,0,0);
+    }
+  
+  //If the mouse is off screen, indicate which direction   
+  int newPartX = mouseX;
+  int newPartY = mouseY;
+  
+  if(newPartX < 184) newPartX = 184;
+  if(newPartX > 317) newPartX = 317;
+  if(newPartY < 312) newPartY = 312;
+  if(newPartY > 576) newPartY = 576;
+  
+  ps.addParticle(newPartX,newPartY,c);
+  ps.run();
+    
+  //Mask, for safety!
+  tint(255,255,255,255);
+  image(maskImg,0,0,800,600);
+   
   /*
   for(int i=0;i<mTrails.length;i++){
       if(mTrails[i] != null){
@@ -305,16 +332,7 @@ void draw() {
       }
     }*/
     
-    float proportion = (prevSpeed - speedMin)/(speedMax-speedMin);
-    color c = color(0,255,0);
-    if(proportion > 0.6){
-      c = color(255,128,0);
-    } else if(proportion > 0.8){
-      c = color(255,0,0);
-    }
-      
-    ps.addParticle(mouseX,mouseY,c);
-    ps.run();
+    
 }
 
 void playVideo(Movie myMovie){
@@ -352,7 +370,6 @@ void mouseClicked() {
   } else {
     endStateZero();
   }
-  println("clicked");
 }
 
 // A simple Particle class
