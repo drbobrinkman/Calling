@@ -19,7 +19,8 @@ int lastTimePunished=0;
 //Constants
 static float speedMax=25.0;
 static float speedMin=1.0;
-static int timePerBlock = 5000; //in millis
+static int baseTimePerBlock = 5000;
+int timePerBlock = baseTimePerBlock; //in millis
 
 //Main game variables
 int state;
@@ -191,13 +192,13 @@ class towerPart {
 };
 
 void doFailTooFast(){
-    if(millis() - lastTimePunished > 100){
+    if(millis() - lastTimePunished > 200){
      doFail();
     } 
 }
 
 void doFail(){
-  lastSuccess = lastSuccess - 3;
+  lastSuccess = lastSuccess - 4;
   if(lastSuccess < 0) lastSuccess = 0;
   
   curMilli = millis();
@@ -205,8 +206,14 @@ void doFail(){
   prevSpeed = 0;
 }
 
+void doWin(){
+    state = 2;
+}
+
 void draw() {  
     background(0);
+    
+    timePerBlock = baseTimePerBlock - lastSuccess*15;
     
     //println(mouseX +", " + mouseY);
     if(millis() - lastTrailMilli > 100){
@@ -240,26 +247,36 @@ void draw() {
     }
     
     //Got the brick in time
-    if(mTowerParts[lastSuccess].x <= mouseX &&
+    if(lastSuccess < mTowerParts.length &&
+       lastSuccess+1 < mTowerParts.length &&
+       ((mTowerParts[lastSuccess].x <= mouseX &&
        mouseX < mTowerParts[lastSuccess].x + mTowerParts[lastSuccess].w &&
        mTowerParts[lastSuccess].y <= mouseY &&
-       mouseY < mTowerParts[lastSuccess].y + mTowerParts[lastSuccess].h){
-         lastSuccess++;
+       mouseY < mTowerParts[lastSuccess].y + mTowerParts[lastSuccess].h) ||
+       (mTowerParts[lastSuccess+1].x <= mouseX &&
+       mouseX < mTowerParts[lastSuccess+1].x + mTowerParts[lastSuccess+1].w &&
+       mTowerParts[lastSuccess+1].y <= mouseY &&
+       mouseY < mTowerParts[lastSuccess+1].y + mTowerParts[lastSuccess+1].h))){
+         lastSuccess += 2;
          bells[currentBell].rewind();
          bells[currentBell].play();
          currentBell = (currentBell+1)%bells.length;
          curMilli = millis();
+         
+         if(lastSuccess >= mTowerParts.length){
+           doWin();
+         }
        }
     
     for(int i=0;i<mTowerParts.length;i++){
-      if(lastSuccess == 0 && i == 0){
+      if(lastSuccess == 0 && (i == 0 || i == 1)){
         tint(64,255,64);
         image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
       } else if(i < lastSuccess){
         //If the block's time has passed, draw it solid.
         tint(255,64,64); //Red is done
         image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
-      } else if (i == lastSuccess & millis()-curMilli < timePerBlock){
+      } else if ((i == lastSuccess || i == lastSuccess+1) && millis()-curMilli < timePerBlock){
         //Time almost up
         float timeLeft = millis()-curMilli;
         float trans = 255 - 255*timeLeft/timePerBlock;
@@ -277,12 +294,7 @@ void draw() {
     playVideo(myMovie); //Call this method to play the movie
     
     tint(255,255,255,255);
-    image(maskImg,800-518-10,10);
-    stroke(0);
-    fill(0);
-    rect(0,0,800-518-10,600);
-    rect(0,0,800,10);
-    rect(790,0,10,600);
+    image(maskImg,0,0,800,600);
   } 
   /*
   for(int i=0;i<mTrails.length;i++){
