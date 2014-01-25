@@ -8,11 +8,12 @@ Minim minim;
 AudioPlayer birds1;
 AudioPlayer[] bells = new AudioPlayer[11];
 int currentBell = 0;
+AudioPlayer soundtrack;
 
 //Constants
-static float speedMax=20.0;
+static float speedMax=25.0;
 static float speedMin=1.0;
-static int timePerBlock = 4000; //in millis
+static int timePerBlock = 4500; //in millis
 
 //Main game variables
 int state;
@@ -99,6 +100,7 @@ void setup() {
   bells[8] = minim.loadFile("bell_8.wav");
   bells[9] = minim.loadFile("bell_9.wav");
   bells[10] = minim.loadFile("bell_10.wav");
+  soundtrack = minim.loadFile("GGJ Audio.mp3");
   
   // play the file from start to finish.
   // if you want to play the file again, 
@@ -119,6 +121,8 @@ void gameRestart(){
   //Play until end of movie
   birds1.rewind();
   birds1.loop();
+  soundtrack.rewind();
+  soundtrack.loop();
 }
 
 void makeTowerParts(){
@@ -286,11 +290,17 @@ void playVideo(Movie myMovie){
   }
   
   if(timeLeft < 0.01){
-    birds1.pause();
+    endStateZero();
   }
 
   tint(255,255,255,trans);     //Tints the current frame
   image(myMovie,0,0);                     //Displays the current frame
+}
+
+void endStateZero(){
+  state = 1;
+  birds1.pause();
+  myMovie.jump(myMovie.duration());
 }
 
 void movieEvent(Movie m) {
@@ -298,8 +308,11 @@ void movieEvent(Movie m) {
 }
 
 void mouseClicked() {
-  
-  gameRestart();
+  if(state != 0){
+    gameRestart();
+  } else {
+    endStateZero();
+  }
   println("clicked");
 }
 
