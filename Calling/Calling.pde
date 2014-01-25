@@ -344,8 +344,12 @@ class Particle {
   float lifespan;
 
   Particle(PVector l, color icolor) {
-    acceleration = new PVector(0,0.05);
-    velocity = new PVector(random(-1,1),random(-2,0));
+    acceleration = new PVector(0,0.025);
+
+    float xdir = mouseX - lastMouseX;
+    float ydir = mouseY - lastMouseY;
+    
+    velocity = new PVector(-xdir/15+random(-0.25,0.25),-ydir/15+random(-0.25,0.25));
     location = l.get();
     lifespan = 60;
     mColor = icolor;
