@@ -1,8 +1,11 @@
 //Run using Sketch->Present in Processing, to get fullscreen
+//Play with XBox controller, using ControllerMate to create virtual mouse
 
 //Main game variables
 int state;
 int startMilli;
+
+int lastSuccess;
 
 static int timePerBlock = 5000; //in millis
 towerPart[] mTowerParts = null;
@@ -14,6 +17,7 @@ void setup() {
   background(0);
   
   state = 0;
+  lastSuccess = 0;
   
   makeTowerParts();
   
@@ -32,48 +36,61 @@ void makeTowerParts(){
       x = 0;
       y = y + h + padding;
     }
-    mTowerParts[i] = new towerPart(x,y,w,h,i*timePerBlock);
+    mTowerParts[i] = new towerPart(x,y,w,h);
     x = x + w + padding;
   }
   
   for(int i=0;i<mTowerParts.length; i++){
-    int t = mTowerParts[i].when;
+    towerPart t = mTowerParts[i];
     int index = (int)random(i,mTowerParts.length);
-    mTowerParts[i].when = mTowerParts[index].when;
-    mTowerParts[index].when = t;
+    mTowerParts[i] = mTowerParts[index];
+    mTowerParts[index] = t;
   }
 }
 
 class towerPart {
-  towerPart(){x=y=w=h=when=0;}
-  towerPart(int ix, int iy, int iw, int ih, int iwhen){
+  towerPart(){x=y=w=h=0;}
+  towerPart(int ix, int iy, int iw, int ih){
     x=ix;
     y=iy;
     w=iw;
     h=ih;
-    when=iwhen;
   }
   
   int x;
   int y;
   int w;
   int h;
-  
-  int when;
 };
 
 void draw() {
+  background(0);
+  
+  if((millis()-startMilli) > lastSuccess*timePerBlock){
+    //failed
+    startMilli = millis();
+    lastSuccess = 0;
+  }
+  
+  //Got the brick in time
+  if(mTowerParts[lastSuccess].x <= mouseX &&
+     mouseX < mTowerParts[lastSuccess].x + mTowerParts[lastSuccess].w &&
+     mTowerParts[lastSuccess].y <= mouseY &&
+     mouseY < mTowerParts[lastSuccess].y + mTowerParts[lastSuccess].h){
+       lastSuccess++;
+     }
+  
   for(int i=0;i<mTowerParts.length;i++){
-    if(mTowerParts[i].when < millis()){
+    if(i*timePerBlock < millis() - startMilli){
       //If the block's time has passed, draw it solid.
       stroke(128);
       fill(96);
-    } else if (mTowerParts[i].when < millis()+timePerBlock){
-      int millisTil = mTowerParts[i].when - millis();
+    } else if (i*timePerBlock < millis()+timePerBlock - startMilli){
+      int millisTil = i*timePerBlock - (millis()-startMilli);
       stroke(255);
       fill(255-(127*millisTil/timePerBlock));
-    } else if (mTowerParts[i].when < millis()+2*timePerBlock){
-      int millisTil = mTowerParts[i].when - millis();
+    } else if (i*timePerBlock < millis()+2*timePerBlock - startMilli){
+      int millisTil = i*timePerBlock - (millis()-startMilli);
       stroke(255*((2*timePerBlock)-millisTil)/(2*timePerBlock));
       fill(127*((2*timePerBlock)-millisTil)/(2*timePerBlock));
     }else {
