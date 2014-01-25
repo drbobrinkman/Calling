@@ -16,7 +16,8 @@ static int timePerBlock = 4000; //in millis
 
 //Main game variables
 int state;
-int startMilli;
+int curMilli;
+//int startMilli;
 
 int lastSuccess;
 
@@ -53,6 +54,7 @@ void setup() {
   size(800,600);
   frameRate(60); //Projector can do 120, but don't bother
   background(0);
+  noCursor();
   
   state = 0;
   lastSuccess = 0;
@@ -77,7 +79,7 @@ void setup() {
   
   makeTowerParts();
   
-  startMilli = millis();
+  curMilli = millis();
   lastTrailMilli = millis();
 
   // we pass this to Minim so that it can load files from the data directory
@@ -170,16 +172,10 @@ class towerPart {
 };
 
 void doFail(){
-  if(lastSuccess != 0){
-    for(int i=0;i<mTowerParts.length; i++){
-      towerPart t = mTowerParts[i];
-      int index = (int)random(i,mTowerParts.length);
-      mTowerParts[i] = mTowerParts[index];
-      mTowerParts[index] = t;
-    }
-  }
-  lastSuccess = 0;
-  startMilli = millis();
+  lastSuccess = lastSuccess - 3;
+  if(lastSuccess < 0) lastSuccess = 0;
+  
+  curMilli = millis();
 }
 
 void draw() {  
@@ -210,7 +206,7 @@ void draw() {
       lastMouseY = mouseY;
     }
     
-    if((millis()-startMilli) > (1+lastSuccess)*timePerBlock){
+    if((millis()-curMilli) > timePerBlock){
       //failed
       doFail();
     }
@@ -224,50 +220,50 @@ void draw() {
          bells[currentBell].rewind();
          bells[currentBell].play();
          currentBell = (currentBell+1)%bells.length;
+         curMilli = millis();
        }
     
     for(int i=0;i<mTowerParts.length;i++){
-      
-      if((i+1)*timePerBlock < millis() - startMilli || i < lastSuccess){
+      if(lastSuccess == 0 && i == 0){
+        tint(0,255,0);
+        image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
+      } else if(i < lastSuccess){
         //If the block's time has passed, draw it solid.
         tint(255,0,0); //Red is done
         image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
-      } else if ((i+1)*timePerBlock < millis()+timePerBlock - startMilli){
+      } else if (i == lastSuccess & millis()-curMilli < timePerBlock){
         //Time almost up
-        int millisTil = i*timePerBlock - (millis()-startMilli);
-        tint(255,128,0);
+        float timeLeft = millis()-curMilli;
+        float trans = 255 - 255*timeLeft/timePerBlock;
+        tint(0,255,0,trans);
         image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
-      } else if ((i+1)*timePerBlock < millis()+2*timePerBlock - startMilli){
-        //Time just starting
-        int millisTil = i*timePerBlock - (millis()-startMilli);
-        tint(0,255,0);
-        image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
-      }else {
-        //Do nothing
+      } else {
+        //do nothing
       }
       
     }
     
-    for(int i=0;i<mTrails.length;i++){
+    
+  
+  if(state == 0){
+    playVideo(myMovie); //Call this method to play the movie
+    
+    tint(255,255,255,255);
+    image(maskImg,800-518-10,10);
+    stroke(0);
+    fill(0);
+    rect(0,0,800-518-10,600);
+    rect(0,0,800,10);
+    rect(790,0,10,600);
+  } 
+  
+  for(int i=0;i<mTrails.length;i++){
       if(mTrails[i] != null){
         noStroke();
         fill(mTrails[i].c);
         ellipse(mTrails[i].x-1,mTrails[i].y-1,2,2);
       }
     }
-    
-    /*
-    image(maskImg,800-518-10,10);
-    stroke(0);
-    fill(0);
-    rect(0,0,800-518-10,600);
-    rect(0,0,800,10);
-    rect(790,0,10,600);*/
-  
-  
-  if(state == 0){
-    playVideo(myMovie); //Call this method to play the movie
-  } 
 }
 
 void playVideo(Movie myMovie){
