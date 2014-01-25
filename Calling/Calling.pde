@@ -10,6 +10,10 @@ AudioPlayer[] bells = new AudioPlayer[11];
 int currentBell = 0;
 AudioPlayer soundtrack;
 
+ParticleSystem ps;
+
+int maxParticles = 10;
+
 //Constants
 static float speedMax=25.0;
 static float speedMin=1.0;
@@ -27,14 +31,14 @@ int lastMouseY;
 
 float prevSpeed;
 
-mouseTrail[] mTrails = null;
-int nextMTrail = 0;
+//mouseTrail[] mTrails = null;
+//int nextMTrail = 0;
 int lastTrailMilli=0;
 
 PImage maskImg;
 PImage[] brickImgs;
 
-class mouseTrail{
+/*class mouseTrail{
   mouseTrail(){x=y=0;c=color(0);}
   mouseTrail(int ix, int iy, color ic){
     x = ix;
@@ -46,7 +50,7 @@ class mouseTrail{
   int y;
   color c;
 }
-
+*/
 
 towerPart[] mTowerParts = null;
 
@@ -61,7 +65,9 @@ void setup() {
   lastSuccess = 0;
   lastMouseX = mouseX;
   lastMouseY = mouseY;
-  mTrails = new mouseTrail[10];
+  //mTrails = new mouseTrail[10];
+  
+  ps = new ParticleSystem();
   
   maskImg = loadImage("mask.png");
   brickImgs = new PImage[12];
@@ -79,8 +85,6 @@ void setup() {
   brickImgs[11] = loadImage("bricks_11.png");
   
   makeTowerParts();
-  
-
 
   // we pass this to Minim so that it can load files from the data directory
   minim = new Minim(this);
@@ -215,8 +219,8 @@ void draw() {
         c = color(255,0,0);
       }
       
-      mTrails[nextMTrail] = new mouseTrail(mouseX,mouseY,c);
-      nextMTrail = (nextMTrail+1)%mTrails.length;
+      //mTrails[nextMTrail] = new mouseTrail(mouseX,mouseY,c);
+      //nextMTrail = (nextMTrail+1)%mTrails.length;
       lastMouseX = mouseX;
       lastMouseY = mouseY;
     }
@@ -271,14 +275,25 @@ void draw() {
     rect(0,0,800,10);
     rect(790,0,10,600);
   } 
-  
+  /*
   for(int i=0;i<mTrails.length;i++){
       if(mTrails[i] != null){
         noStroke();
         fill(mTrails[i].c);
         ellipse(mTrails[i].x-1,mTrails[i].y-1,2,2);
       }
+    }*/
+    
+    float proportion = (prevSpeed - speedMin)/(speedMax-speedMin);
+    color c = color(0,255,0);
+    if(proportion > 0.6){
+      c = color(255,128,0);
+    } else if(proportion > 0.8){
+      c = color(255,0,0);
     }
+      
+    ps.addParticle(mouseX,mouseY,c);
+    ps.run();
 }
 
 void playVideo(Movie myMovie){
@@ -319,3 +334,77 @@ void mouseClicked() {
   println("clicked");
 }
 
+// A simple Particle class
+
+class Particle {
+  PVector location;
+  PVector velocity;
+  PVector acceleration;
+  color  mColor;
+  float lifespan;
+
+  Particle(PVector l, color icolor) {
+    acceleration = new PVector(0,0.05);
+    velocity = new PVector(random(-1,1),random(-2,0));
+    location = l.get();
+    lifespan = 60;
+    mColor = icolor;
+  }
+
+  void run() {
+    update();
+    display();
+  }
+
+  // Method to update location
+  void update() {
+    velocity.add(acceleration);
+    location.add(velocity);
+    lifespan -= 1.0;
+  }
+
+  // Method to display
+  void display() {
+    stroke(red(mColor),green(mColor),blue(mColor),lifespan);
+    fill(red(mColor),green(mColor),blue(mColor),lifespan);
+    ellipse(location.x,location.y,4,4);
+  }
+  
+  // Is the particle still useful?
+  boolean isDead() {
+    if (lifespan < 0.0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+
+
+
+
+// A class to describe a group of Particles
+// An ArrayList is used to manage the list of Particles 
+
+class ParticleSystem {
+  ArrayList<Particle> particles;
+  PVector origin;
+
+  ParticleSystem() {
+    particles = new ArrayList<Particle>();
+  }
+
+  void addParticle(int xLoc,int yLoc, color ic) {
+    particles.add(new Particle(new PVector(xLoc,yLoc),ic));
+  }
+
+  void run() {
+    for (int i = particles.size()-1; i >= 0; i--) {
+      Particle p = particles.get(i);
+      p.run();
+      if (p.isDead()) {
+        particles.remove(i);
+      }
+    }
+  }
+}
