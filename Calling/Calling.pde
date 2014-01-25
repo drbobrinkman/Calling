@@ -41,20 +41,6 @@ int lastTrailMilli=0;
 PImage maskImg;
 PImage[] brickImgs;
 
-/*class mouseTrail{
-  mouseTrail(){x=y=0;c=color(0);}
-  mouseTrail(int ix, int iy, color ic){
-    x = ix;
-    y = iy;
-    c = ic;
-  }
-  
-  int x;
-  int y;
-  color c;
-}
-*/
-
 towerPart[] mTowerParts = null;
 
 void setup() {
@@ -68,7 +54,6 @@ void setup() {
   lastSuccess = 0;
   lastMouseX = mouseX;
   lastMouseY = mouseY;
-  //mTrails = new mouseTrail[10];
   
   ps = new ParticleSystem();
   
@@ -136,11 +121,12 @@ void gameRestart(){
 void makeTowerParts(){
   mTowerParts = new towerPart[7*6];
   
-  int xstart=185;
+  int xstart=800-185-4*32;
   int ystart=375;
 
   int x = xstart;
   int y = ystart;
+  //When I wrote this, I had the display flipped, hence the "800-x" nonsense.
   for(int i=0; i<7; i++){
     x += 16;
     y -= 10;
@@ -199,7 +185,7 @@ void doFailTooFast(){
 }
 
 void doFail(){
-  lastSuccess = lastSuccess - 4;
+  lastSuccess = lastSuccess - 3;
   if(lastSuccess < 0) lastSuccess = 0;
   
   curMilli = millis();
@@ -212,7 +198,7 @@ void doWin(){
 }
 
 void draw() {  
-    background(255);
+    background(0);
     
     timePerBlock = baseTimePerBlock - lastSuccess*15;
     
@@ -236,8 +222,6 @@ void draw() {
         c = color(255,0,0);
       }
       
-      //mTrails[nextMTrail] = new mouseTrail(mouseX,mouseY,c);
-      //nextMTrail = (nextMTrail+1)%mTrails.length;
       lastMouseX = mouseX;
       lastMouseY = mouseY;
     }
@@ -249,16 +233,16 @@ void draw() {
     
     //Got the brick in time
     if(lastSuccess < mTowerParts.length &&
-       lastSuccess+1 < mTowerParts.length &&
+       /*lastSuccess+1 < mTowerParts.length &&*/
        ((mTowerParts[lastSuccess].x <= mouseX &&
        mouseX < mTowerParts[lastSuccess].x + mTowerParts[lastSuccess].w &&
        mTowerParts[lastSuccess].y <= mouseY &&
-       mouseY < mTowerParts[lastSuccess].y + mTowerParts[lastSuccess].h) ||
+       mouseY < mTowerParts[lastSuccess].y + mTowerParts[lastSuccess].h) /*||
        (mTowerParts[lastSuccess+1].x <= mouseX &&
        mouseX < mTowerParts[lastSuccess+1].x + mTowerParts[lastSuccess+1].w &&
        mTowerParts[lastSuccess+1].y <= mouseY &&
-       mouseY < mTowerParts[lastSuccess+1].y + mTowerParts[lastSuccess+1].h))){
-         lastSuccess += 2;
+       mouseY < mTowerParts[lastSuccess+1].y + mTowerParts[lastSuccess+1].h)*/)){
+         lastSuccess += 1;
          bells[currentBell].rewind();
          bells[currentBell].play();
          currentBell = (currentBell+1)%bells.length;
@@ -274,14 +258,14 @@ void draw() {
         image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
       }*/
       
-      if(lastSuccess == 0 && (i == 0 || i == 1)){
+      if(lastSuccess == 0 && (i == 0 /*|| i == 1*/)){
         tint(64,255,64);
         image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
       } else if(i < lastSuccess){
         //If the block's time has passed, draw it solid.
         tint(255,64,64); //Red is done
         image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
-      } else if ((i == lastSuccess || i == lastSuccess+1) && millis()-curMilli < timePerBlock){
+      } else if ((i == lastSuccess /*|| i == lastSuccess+1*/) && millis()-curMilli < timePerBlock){
         //Time almost up
         float timeLeft = millis()-curMilli;
         float trans = 255 - 255*timeLeft/timePerBlock;
@@ -311,8 +295,9 @@ void draw() {
   int newPartX = mouseX;
   int newPartY = mouseY;
   
-  if(newPartX < 184) newPartX = 184;
-  if(newPartX > 317) newPartX = 317;
+  //Had screen inverted when I wrote this, hence the 800-? stuff
+  if(newPartX > 800-184) newPartX = 800-184;
+  if(newPartX < 800-317) newPartX = 800-317;
   if(newPartY < 312) newPartY = 312;
   if(newPartY > 576) newPartY = 576;
   
