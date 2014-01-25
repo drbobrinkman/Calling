@@ -14,6 +14,8 @@ ParticleSystem ps;
 
 int maxParticles = 10;
 
+int lastTimePunished=0;
+
 //Constants
 static float speedMax=25.0;
 static float speedMin=1.0;
@@ -188,11 +190,18 @@ class towerPart {
   PImage img;
 };
 
+void doFailTooFast(){
+    if(millis() - lastTimePunished > 100){
+     doFail();
+    } 
+}
+
 void doFail(){
   lastSuccess = lastSuccess - 3;
   if(lastSuccess < 0) lastSuccess = 0;
   
   curMilli = millis();
+  lastTimePunished = curMilli;
   prevSpeed = 0;
 }
 
@@ -208,7 +217,7 @@ void draw() {
       
       if(proportion > 0.9){
         //TOO FAST
-        doFail();
+        doFailTooFast();
       }
       prevSpeed = mouseDist;
       
