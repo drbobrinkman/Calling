@@ -1,5 +1,11 @@
 //Run using Sketch->Present in Processing, to get fullscreen
 //Play with XBox controller, using ControllerMate to create virtual mouse
+import ddf.minim.*; //Minim is the audio package for processing
+import processing.video.*;
+
+Movie myMovie;
+Minim minim;
+AudioPlayer player;
 
 //Constants
 static float speedMax=20.0;
@@ -71,8 +77,25 @@ void setup() {
   
   startMilli = millis();
   lastTrailMilli = millis();
-  
 
+  // we pass this to Minim so that it can load files from the data directory
+  minim = new Minim(this);
+ 
+ // loadFile will look in all the same places as loadImage does.
+  // this means you can find files that are in the data folder and the 
+  // sketch folder. you can also pass an absolute path, or a URL.
+  player = minim.loadFile("birdsChirping1.mp3");
+  
+  // play the file from start to finish.
+  // if you want to play the file again, 
+  // you need to call rewind() first.
+  player.rewind();
+  myMovie = new Movie(this, "leavesfalling.mp4"); //sets myMovie to the leaves falling video
+  myMovie.noLoop(); //makes the video not loop
+  myMovie.play();   //sets the video up to play
+
+  //Play until end of movie
+  player.loop();
 }
 
 void makeTowerParts(){
@@ -146,84 +169,112 @@ void doFail(){
   startMilli = millis();
 }
 
-void draw() {
-  background(0);
-  
-  println(mouseX +", " + mouseY);
-  if(millis() - lastTrailMilli > 100){
-    lastTrailMilli = millis();
-    float mouseDist = sqrt((mouseX-lastMouseX)*(mouseX-lastMouseX) +
-                           (mouseY-lastMouseY)*(mouseY-lastMouseY));  
-    float proportion = (mouseDist - speedMin)/(speedMax-speedMin);
+void draw() {  
+    background(0);
     
-    if(proportion > 0.9){
-      //TOO FAST
+    println(mouseX +", " + mouseY);
+    if(millis() - lastTrailMilli > 100){
+      lastTrailMilli = millis();
+      float mouseDist = sqrt((mouseX-lastMouseX)*(mouseX-lastMouseX) +
+                             (mouseY-lastMouseY)*(mouseY-lastMouseY));  
+      float proportion = (mouseDist - speedMin)/(speedMax-speedMin);
+      
+      if(proportion > 0.9){
+        //TOO FAST
+        doFail();
+      }
+      
+      color c = color(0,255,0);
+      if(proportion > 0.6){
+        c = color(255,128,0);
+      } else if(proportion > 0.8){
+        c = color(255,0,0);
+      }
+      
+      mTrails[nextMTrail] = new mouseTrail(mouseX,mouseY,c);
+      nextMTrail = (nextMTrail+1)%mTrails.length;
+      lastMouseX = mouseX;
+      lastMouseY = mouseY;
+    }
+    
+    if((millis()-startMilli) > (1+lastSuccess)*timePerBlock){
+      //failed
       doFail();
     }
     
-    color c = color(0,255,0);
-    if(proportion > 0.6){
-      c = color(255,128,0);
-    } else if(proportion > 0.8){
-      c = color(255,0,0);
+    //Got the brick in time
+    if(mTowerParts[lastSuccess].x <= mouseX &&
+       mouseX < mTowerParts[lastSuccess].x + mTowerParts[lastSuccess].w &&
+       mTowerParts[lastSuccess].y <= mouseY &&
+       mouseY < mTowerParts[lastSuccess].y + mTowerParts[lastSuccess].h){
+         lastSuccess++;
+       }
+    
+    for(int i=0;i<mTowerParts.length;i++){
+      
+      if((i+1)*timePerBlock < millis() - startMilli || i < lastSuccess){
+        //If the block's time has passed, draw it solid.
+        tint(255,0,0); //Red is done
+        image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
+      } else if ((i+1)*timePerBlock < millis()+timePerBlock - startMilli){
+        //Time almost up
+        int millisTil = i*timePerBlock - (millis()-startMilli);
+        tint(255,128,0);
+        image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
+      } else if ((i+1)*timePerBlock < millis()+2*timePerBlock - startMilli){
+        //Time just starting
+        int millisTil = i*timePerBlock - (millis()-startMilli);
+        tint(0,255,0);
+        image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
+      }else {
+        //Do nothing
+      }
+      
     }
     
-    mTrails[nextMTrail] = new mouseTrail(mouseX,mouseY,c);
-    nextMTrail = (nextMTrail+1)%mTrails.length;
-    lastMouseX = mouseX;
-    lastMouseY = mouseY;
-  }
-  
-  if((millis()-startMilli) > (1+lastSuccess)*timePerBlock){
-    //failed
-    doFail();
-  }
-  
-  //Got the brick in time
-  if(mTowerParts[lastSuccess].x <= mouseX &&
-     mouseX < mTowerParts[lastSuccess].x + mTowerParts[lastSuccess].w &&
-     mTowerParts[lastSuccess].y <= mouseY &&
-     mouseY < mTowerParts[lastSuccess].y + mTowerParts[lastSuccess].h){
-       lastSuccess++;
-     }
-  
-  for(int i=0;i<mTowerParts.length;i++){
-    
-    if((i+1)*timePerBlock < millis() - startMilli || i < lastSuccess){
-      //If the block's time has passed, draw it solid.
-      tint(255,0,0); //Red is done
-      image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
-    } else if ((i+1)*timePerBlock < millis()+timePerBlock - startMilli){
-      //Time almost up
-      int millisTil = i*timePerBlock - (millis()-startMilli);
-      tint(255,128,0);
-      image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
-    } else if ((i+1)*timePerBlock < millis()+2*timePerBlock - startMilli){
-      //Time just starting
-      int millisTil = i*timePerBlock - (millis()-startMilli);
-      tint(0,255,0);
-      image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
-    }else {
-      //Do nothing
+    for(int i=0;i<mTrails.length;i++){
+      if(mTrails[i] != null){
+        noStroke();
+        fill(mTrails[i].c);
+        ellipse(mTrails[i].x-1,mTrails[i].y-1,2,2);
+      }
     }
     
+    /*
+    image(maskImg,800-518-10,10);
+    stroke(0);
+    fill(0);
+    rect(0,0,800-518-10,600);
+    rect(0,0,800,10);
+    rect(790,0,10,600);*/
+  
+  
+  if(state == 0){
+    playVideo(myMovie); //Call this method to play the movie
+  } 
+}
+
+void playVideo(Movie myMovie){
+  float totalSeconds = myMovie.duration();               //Movie length in seconds     
+  float timeLeft = myMovie.duration() - myMovie.time();  //Seconds left in the movie
+  float time;                                            //used in calculating the faderate
+  boolean fadingOut = false;
+  float trans = 255;
+  
+  if(timeLeft < 5){   //If there are 5 seconds left in the movie, then begin to fade out
+    trans = 255*timeLeft/5;
   }
   
-  for(int i=0;i<mTrails.length;i++){
-    if(mTrails[i] != null){
-      noStroke();
-      fill(mTrails[i].c);
-      ellipse(mTrails[i].x-1,mTrails[i].y-1,2,2);
-    }
+  if(timeLeft < 0.01){
+    player.pause();
   }
-  
-  /*
-  image(maskImg,800-518-10,10);
-  stroke(0);
-  fill(0);
-  rect(0,0,800-518-10,600);
-  rect(0,0,800,10);
-  rect(790,0,10,600);*/
+
+  tint(255,255,255,trans);     //Tints the current frame
+  image(myMovie,0,0);                     //Displays the current frame
+}
+
+void movieEvent(Movie m) {
+  m.read();                              //reads in the next frame
 }
 
 
