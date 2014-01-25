@@ -13,7 +13,7 @@ AudioPlayer soundtrack;
 //Constants
 static float speedMax=25.0;
 static float speedMin=1.0;
-static int timePerBlock = 4500; //in millis
+static int timePerBlock = 5000; //in millis
 
 //Main game variables
 int state;
@@ -25,7 +25,7 @@ int lastSuccess;
 int lastMouseX;
 int lastMouseY;
 
-
+float prevSpeed;
 
 mouseTrail[] mTrails = null;
 int nextMTrail = 0;
@@ -114,6 +114,7 @@ void setup() {
 
 void gameRestart(){
   state = 0;
+  prevSpeed = 0;
   myMovie.jump(0);
   myMovie.play();   //sets the video up to play
   curMilli = millis();
@@ -188,6 +189,7 @@ void doFail(){
   if(lastSuccess < 0) lastSuccess = 0;
   
   curMilli = millis();
+  prevSpeed = 0;
 }
 
 void draw() {  
@@ -198,12 +200,13 @@ void draw() {
       lastTrailMilli = millis();
       float mouseDist = sqrt((mouseX-lastMouseX)*(mouseX-lastMouseX) +
                              (mouseY-lastMouseY)*(mouseY-lastMouseY));  
-      float proportion = (mouseDist - speedMin)/(speedMax-speedMin);
+      float proportion = ((mouseDist+prevSpeed)/2.0 - speedMin)/(speedMax-speedMin);
       
       if(proportion > 0.9){
         //TOO FAST
         doFail();
       }
+      prevSpeed = mouseDist;
       
       color c = color(0,255,0);
       if(proportion > 0.6){
@@ -237,17 +240,17 @@ void draw() {
     
     for(int i=0;i<mTowerParts.length;i++){
       if(lastSuccess == 0 && i == 0){
-        tint(0,255,0);
+        tint(64,255,64);
         image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
       } else if(i < lastSuccess){
         //If the block's time has passed, draw it solid.
-        tint(255,0,0); //Red is done
+        tint(255,64,64); //Red is done
         image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
       } else if (i == lastSuccess & millis()-curMilli < timePerBlock){
         //Time almost up
         float timeLeft = millis()-curMilli;
         float trans = 255 - 255*timeLeft/timePerBlock;
-        tint(0,255,0,trans);
+        tint(255-trans,255,64,trans);
         image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
       } else {
         //do nothing
@@ -285,8 +288,8 @@ void playVideo(Movie myMovie){
   boolean fadingOut = false;
   float trans = 255;
   
-  if(timeLeft < 5){   //If there are 5 seconds left in the movie, then begin to fade out
-    trans = 255*timeLeft/5;
+  if(timeLeft < 3){   //If there are 3 seconds left in the movie, then begin to fade out
+    trans = 255*timeLeft/3;
   }
   
   if(timeLeft < 0.01){
