@@ -5,7 +5,9 @@ import processing.video.*;
 
 Movie myMovie;
 Minim minim;
-AudioPlayer player;
+AudioPlayer birds1;
+AudioPlayer[] bells = new AudioPlayer[11];
+int currentBell = 0;
 
 //Constants
 static float speedMax=20.0;
@@ -84,18 +86,29 @@ void setup() {
  // loadFile will look in all the same places as loadImage does.
   // this means you can find files that are in the data folder and the 
   // sketch folder. you can also pass an absolute path, or a URL.
-  player = minim.loadFile("birdsChirping1.mp3");
+  birds1 = minim.loadFile("birdsChirping1.mp3");
+  bells[0] = minim.loadFile("bell_0.wav");
+  bells[1] = minim.loadFile("bell_1.wav");
+  bells[2] = minim.loadFile("bell_2.wav");
+  bells[3] = minim.loadFile("bell_3.wav");
+  bells[4] = minim.loadFile("bell_4.wav");
+  bells[5] = minim.loadFile("bell_5.wav");
+  bells[6] = minim.loadFile("bell_6.wav");
+  bells[7] = minim.loadFile("bell_7.wav");
+  bells[8] = minim.loadFile("bell_8.wav");
+  bells[9] = minim.loadFile("bell_9.wav");
+  bells[10] = minim.loadFile("bell_10.wav");
   
   // play the file from start to finish.
   // if you want to play the file again, 
   // you need to call rewind() first.
-  player.rewind();
+  birds1.rewind();
   myMovie = new Movie(this, "leavesfalling.mp4"); //sets myMovie to the leaves falling video
   myMovie.noLoop(); //makes the video not loop
   myMovie.play();   //sets the video up to play
 
   //Play until end of movie
-  player.loop();
+  birds1.loop();
 }
 
 void makeTowerParts(){
@@ -208,6 +221,9 @@ void draw() {
        mTowerParts[lastSuccess].y <= mouseY &&
        mouseY < mTowerParts[lastSuccess].y + mTowerParts[lastSuccess].h){
          lastSuccess++;
+         bells[currentBell].rewind();
+         bells[currentBell].play();
+         currentBell = (currentBell+1)%bells.length;
        }
     
     for(int i=0;i<mTowerParts.length;i++){
@@ -266,7 +282,7 @@ void playVideo(Movie myMovie){
   }
   
   if(timeLeft < 0.01){
-    player.pause();
+    birds1.pause();
   }
 
   tint(255,255,255,trans);     //Tints the current frame
