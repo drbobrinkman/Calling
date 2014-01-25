@@ -1,6 +1,11 @@
 //Run using Sketch->Present in Processing, to get fullscreen
 //Play with XBox controller, using ControllerMate to create virtual mouse
 
+//Constants
+static float speedMax=20.0;
+static float speedMin=1.0;
+static int timePerBlock = 4000; //in millis
+
 //Main game variables
 int state;
 int startMilli;
@@ -10,15 +15,14 @@ int lastSuccess;
 int lastMouseX;
 int lastMouseY;
 
-float speedMax=30.0;
-float speedMin=1.0;
+
 
 mouseTrail[] mTrails = null;
 int nextMTrail = 0;
 int lastTrailMilli=0;
 
 PImage maskImg;
-PImage brickImg;
+PImage[] brickImgs;
 
 class mouseTrail{
   mouseTrail(){x=y=0;c=color(0);}
@@ -33,7 +37,7 @@ class mouseTrail{
   color c;
 }
 
-static int timePerBlock = 5000; //in millis
+
 towerPart[] mTowerParts = null;
 
 void setup() {
@@ -48,29 +52,60 @@ void setup() {
   lastMouseY = mouseY;
   mTrails = new mouseTrail[10];
   
+  maskImg = loadImage("mask.png");
+  brickImgs = new PImage[12];
+  brickImgs[0] = loadImage("bricks_0.png");
+  brickImgs[1] = loadImage("bricks_1.png");
+  brickImgs[2] = loadImage("bricks_2.png");
+  brickImgs[3] = loadImage("bricks_3.png");
+  brickImgs[4] = loadImage("bricks_4.png");
+  brickImgs[5] = loadImage("bricks_5.png");
+  brickImgs[6] = loadImage("bricks_6.png");
+  brickImgs[7] = loadImage("bricks_7.png");
+  brickImgs[8] = loadImage("bricks_8.png");
+  brickImgs[9] = loadImage("bricks_9.png");
+  brickImgs[10] = loadImage("bricks_10.png");
+  brickImgs[11] = loadImage("bricks_11.png");
+  
   makeTowerParts();
   
   startMilli = millis();
   lastTrailMilli = millis();
   
-  maskImg = loadImage("mask.png");
-  brickImg = loadImage("bricks.png");
+
 }
 
 void makeTowerParts(){
-  mTowerParts = new towerPart[100];
-  int x=0;
-  int y=0;
-  int w = 45;
+  mTowerParts = new towerPart[108];
+  int xstart=634;
+  int ystart=234;
+  int xextent = 704;
+ 
+  int x=xstart;
+  int y=ystart;
+  int w = (xextent-xstart)/2;
   int h = 20;
-  int padding = 5;
-  for(int i=0; i<mTowerParts.length; i++){
-    if(x+w >= width/3){
-      x = 0;
-      y = y + h + padding;
+  int vpadding = -7;
+  int hpadding = 0;
+  for(int i=0; i<54; i++){
+    if(x+w > xextent){
+      x = xstart;
+      y = y + h + vpadding;
     }
-    mTowerParts[i] = new towerPart(x,y,w,h);
-    x = x + w + padding;
+    mTowerParts[i] = new towerPart(x,y,w,h,brickImgs[(int)random(0,6)]);
+    x = x + w + hpadding;
+  }
+  xextent = xextent + (xextent-xstart);
+  xstart = 704;
+  x=xstart;
+  y=ystart;
+  for(int i=54; i<108; i++){
+    if(x+w > xextent){
+      x = xstart;
+      y = y + h + vpadding;
+    }
+    mTowerParts[i] = new towerPart(x,y,w,h,brickImgs[(int)random(6,12)]);
+    x = x + w + hpadding;
   }
   
   for(int i=0;i<mTowerParts.length; i++){
@@ -82,18 +117,20 @@ void makeTowerParts(){
 }
 
 class towerPart {
-  towerPart(){x=y=w=h=0;}
-  towerPart(int ix, int iy, int iw, int ih){
+  towerPart(){x=y=w=h=0;img=null;}
+  towerPart(int ix, int iy, int iw, int ih,PImage iimg){
     x=ix;
     y=iy;
     w=iw;
     h=ih;
+    img = iimg;
   }
   
   int x;
   int y;
   int w;
   int h;
+  PImage img;
 };
 
 void doFail(){
@@ -110,8 +147,9 @@ void doFail(){
 }
 
 void draw() {
-  background(255);
+  background(0);
   
+  println(mouseX +", " + mouseY);
   if(millis() - lastTrailMilli > 100){
     lastTrailMilli = millis();
     float mouseDist = sqrt((mouseX-lastMouseX)*(mouseX-lastMouseX) +
@@ -150,25 +188,25 @@ void draw() {
      }
   
   for(int i=0;i<mTowerParts.length;i++){
+    
     if((i+1)*timePerBlock < millis() - startMilli || i < lastSuccess){
       //If the block's time has passed, draw it solid.
-      stroke(128);
-      fill(128,0,0); //Red is done
+      tint(255,0,0); //Red is done
+      image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
     } else if ((i+1)*timePerBlock < millis()+timePerBlock - startMilli){
       //Time almost up
       int millisTil = i*timePerBlock - (millis()-startMilli);
-      stroke(128);
-      fill(128,64,0);
+      tint(255,128,0);
+      image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
     } else if ((i+1)*timePerBlock < millis()+2*timePerBlock - startMilli){
       //Time just starting
       int millisTil = i*timePerBlock - (millis()-startMilli);
-      stroke(128);
-      fill(0,128,0);
+      tint(0,255,0);
+      image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
     }else {
-      noStroke();
-      noFill();
+      //Do nothing
     }
-    rect(mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h,3);
+    
   }
   
   for(int i=0;i<mTrails.length;i++){
@@ -179,12 +217,13 @@ void draw() {
     }
   }
   
+  /*
   image(maskImg,800-518-10,10);
   stroke(0);
   fill(0);
   rect(0,0,800-518-10,600);
   rect(0,0,800,10);
-  rect(790,0,10,600);
+  rect(790,0,10,600);*/
 }
 
 
