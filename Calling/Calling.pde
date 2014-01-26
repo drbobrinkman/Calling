@@ -6,6 +6,7 @@ import processing.video.*;
 Movie myMovie;
 Movie myMovie2;
 Movie myMovie4;
+Movie myMovie6;
 
 Minim minim;
 //AudioPlayer birds1;
@@ -122,9 +123,12 @@ void setup() {
   myMovie2.noLoop();
   myMovie4 = new Movie(this, "Stock Footage of the sun shining in a silhouetted grove of trees in Israel.mp4");
   myMovie4.noLoop();
+  myMovie6 = new Movie(this, "Along The Beach Stock Footage.mp4");
+  myMovie6.noLoop();
   myMovie.volume(0);
   myMovie2.volume(0);
   myMovie4.volume(0);
+  myMovie6.volume(0);
   
   gameRestart();
 }
@@ -232,6 +236,10 @@ void draw() {
         myMovie4.jump(0);
         myMovie4.play();
         myMovie4.volume(0);
+      } else if(state == 6){
+        myMovie6.jump(0);
+        myMovie6.play();
+        myMovie6.volume(0);
       }
     }
     
@@ -321,6 +329,8 @@ void draw() {
     playVideo(myMovie2);
   } else if(state == 4){
     playVideo(myMovie4);
+  } else if(state == 6){
+    playVideo(myMovie6);
   }
 
   float proportion = (prevSpeed - speedMin)/(speedMax-speedMin);
@@ -419,6 +429,11 @@ void endStateTwo(){
 void endStateFour(){
   state = 5;
   myMovie4.jump(myMovie4.duration());
+}
+
+void endStateSix(){
+  state = 0;
+  myMovie6.jump(myMovie6.duration());
 }
 
 void movieEvent(Movie m) {
