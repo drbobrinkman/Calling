@@ -246,7 +246,7 @@ void doFail(){
 
 void draw() {  
     background(0);
-    println(mouseX + ", " + mouseY);
+    //println(mouseX + ", " + mouseY);
     if(lastSuccess >= numPiecesInLevel[state/2]){
       state++;
       lastSuccess = 0;
