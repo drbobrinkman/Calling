@@ -4,11 +4,17 @@ import ddf.minim.*; //Minim is the audio package for processing
 import processing.video.*;
 
 Movie myMovie;
+Movie myMovie2;
+Movie myMovie4;
+
 Minim minim;
 AudioPlayer birds1;
 AudioPlayer[] bells = new AudioPlayer[11];
 int currentBell = 0;
 AudioPlayer soundtrack;
+
+
+int[] numPiecesInLevel = {42, 30, 40};
 
 ParticleSystem ps;
 
@@ -23,6 +29,14 @@ static int baseTimePerBlock = 5000;
 int timePerBlock = baseTimePerBlock; //in millis
 
 //Main game variables
+//State values:
+//0: Intro movie
+//1: First level
+//2: Second movie
+//3: Second level
+//4: Third moview
+//5: Third level
+//6: Game won
 int state;
 int curMilli;
 //int startMilli;
@@ -40,8 +54,9 @@ int lastTrailMilli=0;
 
 PImage maskImg;
 PImage[] brickImgs;
+PImage level1Topper;
 
-towerPart[] mTowerParts = null;
+towerPart[] mTowerParts1 = null;
 
 void setup() {
   //Projector native resolution in 800x600
@@ -51,13 +66,16 @@ void setup() {
   noCursor();
   
   state = 0;
-  lastSuccess = 0;
+  lastSuccess = 40;
   lastMouseX = mouseX;
   lastMouseY = mouseY;
   
   ps = new ParticleSystem();
   
+  level1Topper = loadImage("level1_topper.png");
+  level1Topper.resize(800,600);
   maskImg = loadImage("mask.png");
+  maskImg.resize(800,600);
   brickImgs = new PImage[12];
   brickImgs[0] = loadImage("bricks_0.png");
   brickImgs[1] = loadImage("bricks_1.png");
@@ -100,6 +118,8 @@ void setup() {
   
   myMovie = new Movie(this, "leavesfalling.mp4"); //sets myMovie to the leaves falling video
   myMovie.noLoop(); //makes the video not loop
+  myMovie2 = myMovie;
+  myMovie4 = myMovie;
   
   gameRestart();
 }
@@ -119,7 +139,7 @@ void gameRestart(){
 }
 
 void makeTowerParts(){
-  mTowerParts = new towerPart[7*6];
+  mTowerParts1 = new towerPart[7*6];
   
   int xstart=800-185-4*32;
   int ystart=375;
@@ -130,34 +150,34 @@ void makeTowerParts(){
   for(int i=0; i<7; i++){
     x += 16;
     y -= 10;
-    mTowerParts[i*6+0] = new towerPart(x,y,32,20,brickImgs[(int)random(0,6)]);
+    mTowerParts1[i*6+0] = new towerPart(x,y,32,20,brickImgs[(int)random(0,6)]);
     x += 3*16;
     y -= 5;
-    mTowerParts[i*6+1] = new towerPart(x,y,32,20,brickImgs[(int)random(6,12)]);
+    mTowerParts1[i*6+1] = new towerPart(x,y,32,20,brickImgs[(int)random(6,12)]);
     x += 2*16;
     y +=10;
-    mTowerParts[i*6+2] = new towerPart(x,y,32,20,brickImgs[(int)random(6,12)]);
+    mTowerParts1[i*6+2] = new towerPart(x,y,32,20,brickImgs[(int)random(6,12)]);
     x += 2*16;
     y += 10;
     
     x=xstart;
     y += 5;
-    mTowerParts[i*6+3] = new towerPart(x,y,32,20,brickImgs[(int)random(0,6)]);
+    mTowerParts1[i*6+3] = new towerPart(x,y,32,20,brickImgs[(int)random(0,6)]);
     x += 2*16;
     y -= 10;
-    mTowerParts[i*6+4] = new towerPart(x,y,32,20,brickImgs[(int)random(0,6)]);
+    mTowerParts1[i*6+4] = new towerPart(x,y,32,20,brickImgs[(int)random(0,6)]);
     x += 3*16;
     y += 5;
-    mTowerParts[i*6+5] = new towerPart(x,y,32,20,brickImgs[(int)random(6,12)]);
+    mTowerParts1[i*6+5] = new towerPart(x,y,32,20,brickImgs[(int)random(6,12)]);
     y += 25;
     x = xstart;
   }
   
-  for(int i=0;i<mTowerParts.length; i++){
-    towerPart t = mTowerParts[i];
-    int index = (int)random(i,mTowerParts.length);
-    mTowerParts[i] = mTowerParts[index];
-    mTowerParts[index] = t;
+  for(int i=0;i<mTowerParts1.length; i++){
+    towerPart t = mTowerParts1[i];
+    int index = (int)random(i,mTowerParts1.length);
+    mTowerParts1[i] = mTowerParts1[index];
+    mTowerParts1[index] = t;
   }
 }
 
@@ -200,6 +220,11 @@ void doWin(){
 void draw() {  
     background(0);
     
+    if(lastSuccess >= numPiecesInLevel[state/2]){
+      state++;
+      lastSuccess = 0;
+    }
+    
     timePerBlock = baseTimePerBlock - lastSuccess*15;
     
     println(mouseX +", " + mouseY);
@@ -232,56 +257,66 @@ void draw() {
     }
     
     //Got the brick in time
-    if(lastSuccess < mTowerParts.length &&
-       /*lastSuccess+1 < mTowerParts.length &&*/
-       ((mTowerParts[lastSuccess].x <= mouseX &&
-       mouseX < mTowerParts[lastSuccess].x + mTowerParts[lastSuccess].w &&
-       mTowerParts[lastSuccess].y <= mouseY &&
-       mouseY < mTowerParts[lastSuccess].y + mTowerParts[lastSuccess].h) /*||
-       (mTowerParts[lastSuccess+1].x <= mouseX &&
-       mouseX < mTowerParts[lastSuccess+1].x + mTowerParts[lastSuccess+1].w &&
-       mTowerParts[lastSuccess+1].y <= mouseY &&
-       mouseY < mTowerParts[lastSuccess+1].y + mTowerParts[lastSuccess+1].h)*/)){
+    if(lastSuccess < mTowerParts1.length &&
+       /*lastSuccess+1 < mTowerParts1.length &&*/
+       ((mTowerParts1[lastSuccess].x <= mouseX &&
+       mouseX < mTowerParts1[lastSuccess].x + mTowerParts1[lastSuccess].w &&
+       mTowerParts1[lastSuccess].y <= mouseY &&
+       mouseY < mTowerParts1[lastSuccess].y + mTowerParts1[lastSuccess].h) /*||
+       (mTowerParts1[lastSuccess+1].x <= mouseX &&
+       mouseX < mTowerParts1[lastSuccess+1].x + mTowerParts1[lastSuccess+1].w &&
+       mTowerParts1[lastSuccess+1].y <= mouseY &&
+       mouseY < mTowerParts1[lastSuccess+1].y + mTowerParts1[lastSuccess+1].h)*/)){
          lastSuccess += 1;
          bells[currentBell].rewind();
          bells[currentBell].play();
          currentBell = (currentBell+1)%bells.length;
          curMilli = millis();
          
-         if(lastSuccess >= mTowerParts.length){
+         if(lastSuccess >= mTowerParts1.length){
            doWin();
          }
        }
     
-    for(int i=0;i<mTowerParts.length;i++){
-      /*if(mTowerParts[i] != null){
-        image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
+    for(int i=0;i<mTowerParts1.length;i++){
+      /*if(mTowerParts1[i] != null){
+        image(mTowerParts1[i].img,mTowerParts1[i].x,mTowerParts1[i].y,mTowerParts1[i].w,mTowerParts1[i].h);
       }*/
       
-      if(lastSuccess == 0 && (i == 0 /*|| i == 1*/)){
+      if(state > 1){
+        tint(255,96,96); //Red is done
+        image(mTowerParts1[i].img,mTowerParts1[i].x,mTowerParts1[i].y,mTowerParts1[i].w,mTowerParts1[i].h);
+      } else if(lastSuccess == 0 && (i == 0 /*|| i == 1*/)){
         tint(64,255,64);
-        image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
+        image(mTowerParts1[i].img,mTowerParts1[i].x,mTowerParts1[i].y,mTowerParts1[i].w,mTowerParts1[i].h);
       } else if(i < lastSuccess){
         //If the block's time has passed, draw it solid.
-        tint(255,64,64); //Red is done
-        image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
+        tint(255,96,96); //Red is done
+        image(mTowerParts1[i].img,mTowerParts1[i].x,mTowerParts1[i].y,mTowerParts1[i].w,mTowerParts1[i].h);
       } else if ((i == lastSuccess /*|| i == lastSuccess+1*/) && millis()-curMilli < timePerBlock){
         //Time almost up
         float timeLeft = millis()-curMilli;
         float trans = 255 - 255*timeLeft/timePerBlock;
         tint(255-trans,255,64,trans);
-        image(mTowerParts[i].img,mTowerParts[i].x,mTowerParts[i].y,mTowerParts[i].w,mTowerParts[i].h);
+        image(mTowerParts1[i].img,mTowerParts1[i].x,mTowerParts1[i].y,mTowerParts1[i].w,mTowerParts1[i].h);
       } else {
         //do nothing
       }
       
     }
     
-    
+    if(state > 1){
+      tint(255,255,255,255);
+      image(level1Topper,0,0);
+    }
   
   if(state == 0){
     playVideo(myMovie); //Call this method to play the movie
-  }  
+  } else if(state == 2){
+    playVideo(myMovie2);
+  } else if(state == 4){
+    playVideo(myMovie4);
+  }
     
   float proportion = (prevSpeed - speedMin)/(speedMax-speedMin);
     color c = color(0,255,0);
@@ -306,17 +341,7 @@ void draw() {
     
   //Mask, for safety!
   tint(255,255,255,255);
-  image(maskImg,0,0,800,600);
-   
-  /*
-  for(int i=0;i<mTrails.length;i++){
-      if(mTrails[i] != null){
-        noStroke();
-        fill(mTrails[i].c);
-        ellipse(mTrails[i].x-1,mTrails[i].y-1,2,2);
-      }
-    }*/
-    
+  image(maskImg,0,0);
     
 }
 
@@ -331,8 +356,14 @@ void playVideo(Movie myMovie){
     trans = 255*timeLeft/3;
   }
   
-  if(timeLeft < 0.01){
-    endStateZero();
+  if(timeLeft < 0.1){
+    if(state == 0){
+      endStateZero();
+    } else if(state == 2){
+      endStateTwo();
+    } else if(state == 4){
+      endStateFour();
+    }
   }
 
   tint(255,255,255,trans);     //Tints the current frame
@@ -343,6 +374,16 @@ void endStateZero(){
   state = 1;
   birds1.pause();
   myMovie.jump(myMovie.duration());
+}
+
+void endStateTwo(){
+  state = 3;
+  myMovie2.jump(myMovie.duration());
+}
+
+void endStateFour(){
+  state = 5;
+  myMovie4.jump(myMovie.duration());
 }
 
 void movieEvent(Movie m) {
