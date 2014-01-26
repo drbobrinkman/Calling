@@ -60,6 +60,7 @@ PImage[] btbricks;
 PImage btcupola;
 
 towerPart[] mTowerParts1 = null;
+towerPart[] mTowerParts2 = null;
 
 void setup() {
   //Projector native resolution in 800x600
@@ -69,7 +70,7 @@ void setup() {
   noCursor();
   
   state = 0;
-  lastSuccess = 0;
+  lastSuccess = 40;
   lastMouseX = mouseX;
   lastMouseY = mouseY;
   
@@ -196,6 +197,17 @@ void makeTowerParts(){
     mTowerParts1[i] = mTowerParts1[index];
     mTowerParts1[index] = t;
   }
+  
+  mTowerParts2 = new towerPart[32];
+  for(int i=0;i<mTowerParts2.length;i++){
+    mTowerParts2[i] = new towerPart(0,0,269,589,btbricks[i]);
+  }
+  for(int i=0;i<mTowerParts2.length; i++){
+    towerPart t = mTowerParts2[i];
+    int index = (int)random(i,mTowerParts2.length);
+    mTowerParts2[i] = mTowerParts2[index];
+    mTowerParts2[index] = t;
+  }
 }
 
 class towerPart {
@@ -231,8 +243,8 @@ void doFail(){
 }
 
 void draw() {  
-    background(0);
-    
+    background(255);
+    println(mouseX + ", " + mouseY);
     if(lastSuccess >= numPiecesInLevel[state/2]){
       state++;
       lastSuccess = 0;
@@ -281,23 +293,40 @@ void draw() {
       doFail();
     }
     
-    //Got the brick in time
-    if(lastSuccess < mTowerParts1.length &&
-       /*lastSuccess+1 < mTowerParts1.length &&*/
-       ((mTowerParts1[lastSuccess].x <= mouseX &&
-       mouseX < mTowerParts1[lastSuccess].x + mTowerParts1[lastSuccess].w &&
-       mTowerParts1[lastSuccess].y <= mouseY &&
-       mouseY < mTowerParts1[lastSuccess].y + mTowerParts1[lastSuccess].h) /*||
-       (mTowerParts1[lastSuccess+1].x <= mouseX &&
-       mouseX < mTowerParts1[lastSuccess+1].x + mTowerParts1[lastSuccess+1].w &&
-       mTowerParts1[lastSuccess+1].y <= mouseY &&
-       mouseY < mTowerParts1[lastSuccess+1].y + mTowerParts1[lastSuccess+1].h)*/)){
-         lastSuccess += 1;
-         bells[currentBell].rewind();
-         bells[currentBell].play();
-         currentBell = (currentBell+1)%bells.length;
-         curMilli = millis();
-       }
+    if(state == 1){
+      //Got the brick in time
+      if(lastSuccess < mTowerParts1.length &&
+         /*lastSuccess+1 < mTowerParts1.length &&*/
+         ((mTowerParts1[lastSuccess].x <= mouseX &&
+         mouseX < mTowerParts1[lastSuccess].x + mTowerParts1[lastSuccess].w &&
+         mTowerParts1[lastSuccess].y <= mouseY &&
+         mouseY < mTowerParts1[lastSuccess].y + mTowerParts1[lastSuccess].h) /*||
+         (mTowerParts1[lastSuccess+1].x <= mouseX &&
+         mouseX < mTowerParts1[lastSuccess+1].x + mTowerParts1[lastSuccess+1].w &&
+         mTowerParts1[lastSuccess+1].y <= mouseY &&
+         mouseY < mTowerParts1[lastSuccess+1].y + mTowerParts1[lastSuccess+1].h)*/)){
+           lastSuccess += 1;
+           bells[currentBell].rewind();
+           bells[currentBell].play();
+           currentBell = (currentBell+1)%bells.length;
+           curMilli = millis();
+         }
+    } else if(state == 3){
+      if(lastSuccess < mTowerParts2.length){
+        //Get the pixel color at the current mouse location
+        if(mouseX < mTowerParts2[lastSuccess].w && mouseY < mTowerParts2[lastSuccess].h){
+          //Mouse is inside the picture, at least
+          color c = mTowerParts2[lastSuccess].img.get(mouseX,mouseY);
+          if(alpha(c) > 0){
+           lastSuccess += 1;
+           bells[currentBell].rewind();
+           bells[currentBell].play();
+           currentBell = (currentBell+1)%bells.length;
+           curMilli = millis();
+         }
+        }
+      }
+    }
 
     for(int i=0;i<mTowerParts1.length;i++){
       /*if(mTowerParts1[i] != null){
@@ -325,10 +354,41 @@ void draw() {
       }
       
     }
-    
+    if(state >= 3){
+      for(int i=0;i<mTowerParts2.length;i++){
+        /*if(mTowerParts1[i] != null){
+          image(mTowerParts1[i].img,mTowerParts1[i].x,mTowerParts1[i].y,mTowerParts1[i].w,mTowerParts1[i].h);
+        }*/
+        
+        if(state > 3){
+          tint(255,96,96); //Red is done
+          image(mTowerParts2[i].img,mTowerParts2[i].x,mTowerParts2[i].y,mTowerParts2[i].w,mTowerParts2[i].h);
+        } else if(lastSuccess == 0 && (i == 0 /*|| i == 1*/)){
+          tint(64,255,64);
+          image(mTowerParts2[i].img,mTowerParts2[i].x,mTowerParts2[i].y,mTowerParts2[i].w,mTowerParts2[i].h);
+        } else if(i < lastSuccess){
+          //If the block's time has passed, draw it solid.
+          tint(255,96,96); //Red is done
+          image(mTowerParts2[i].img,mTowerParts2[i].x,mTowerParts2[i].y,mTowerParts2[i].w,mTowerParts2[i].h);
+        } else if ((i == lastSuccess /*|| i == lastSuccess+1*/) && millis()-curMilli < timePerBlock){
+          //Time almost up
+          float timeLeft = millis()-curMilli;
+          float trans = 255 - 255*timeLeft/timePerBlock;
+          tint(255-trans,255,64,trans);
+          image(mTowerParts2[i].img,mTowerParts2[i].x,mTowerParts2[i].y,mTowerParts2[i].w,mTowerParts2[i].h);
+        } else {
+          //do nothing
+        }
+      }
+      
+    }
     if(state > 1){
       tint(255,255,255,255);
       image(level1Topper,0,0);
+    }
+    if(state > 3){
+      tint(255,255,255,255);
+      image(btcupola,0,0);
     }
   
   if(state == 0){
@@ -355,10 +415,16 @@ void draw() {
 
   //Had screen inverted when I wrote this, hence the 800-? stuff
   if(state <= 1){
-    if(newPartX > 800-184) newPartX = 800-184;
-    if(newPartX < 800-317) newPartX = 800-317;
-    if(newPartY < 312) newPartY = 312;
-    if(newPartY > 576) newPartY = 576;
+    if(newPartY < 362) newPartY = 362;
+    if(newPartY > 575) newPartY = 575;
+    
+    if(newPartX > 610) newPartX = 610;
+    if(newPartX <= 610 && 
+       newPartY >= 362 &&
+       newPartY <= 575) {
+         int xCutoff = 496 - (14*(newPartY-362)/213);
+         if(newPartX < xCutoff) newPartX = xCutoff;
+       } 
   } else if(state <= 3){
     //This is the tricky case... 
     if(newPartY < 324) newPartY = 324;
