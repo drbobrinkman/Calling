@@ -70,7 +70,7 @@ void setup() {
   noCursor();
   
   state = 0;
-  lastSuccess = 40;
+  lastSuccess = 0;
   lastMouseX = mouseX;
   lastMouseY = mouseY;
   
@@ -243,7 +243,7 @@ void doFail(){
 }
 
 void draw() {  
-    background(255);
+    background(0);
     println(mouseX + ", " + mouseY);
     if(lastSuccess >= numPiecesInLevel[state/2]){
       state++;
