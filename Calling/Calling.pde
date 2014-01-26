@@ -118,8 +118,10 @@ void setup() {
   
   myMovie = new Movie(this, "leavesfalling.mp4"); //sets myMovie to the leaves falling video
   myMovie.noLoop(); //makes the video not loop
-  myMovie2 = myMovie;
-  myMovie4 = myMovie;
+  myMovie2 = new Movie(this, "snow to use.mp4");
+  myMovie2.noLoop();
+  myMovie4 = new Movie(this, "Stock Footage of the sun shining in a silhouetted grove of trees in Israel.mp4");
+  myMovie4.noLoop();
   
   gameRestart();
 }
@@ -218,16 +220,24 @@ void doWin(){
 }
 
 void draw() {  
-    background(0);
-    
+    background(255);
+    println("a state: " + state);
     if(lastSuccess >= numPiecesInLevel[state/2]){
       state++;
       lastSuccess = 0;
+      if(state == 2){
+        myMovie2.jump(0);
+        myMovie2.play();
+      } else if(state == 4){
+        myMovie4.jump(0);
+        myMovie4.play();
+      }
     }
+    
+    println("b state: " + state);
     
     timePerBlock = baseTimePerBlock - lastSuccess*15;
     
-    println(mouseX +", " + mouseY);
     if(millis() - lastTrailMilli > 100){
       lastTrailMilli = millis();
       float mouseDist = sqrt((mouseX-lastMouseX)*(mouseX-lastMouseX) +
@@ -251,6 +261,7 @@ void draw() {
       lastMouseY = mouseY;
     }
     
+    println("c state: " + state); 
     if((millis()-curMilli) > timePerBlock){
       //failed
       doFail();
@@ -277,7 +288,7 @@ void draw() {
            doWin();
          }
        }
-    
+    println("d state: " + state);
     for(int i=0;i<mTowerParts1.length;i++){
       /*if(mTowerParts1[i] != null){
         image(mTowerParts1[i].img,mTowerParts1[i].x,mTowerParts1[i].y,mTowerParts1[i].w,mTowerParts1[i].h);
@@ -304,7 +315,7 @@ void draw() {
       }
       
     }
-    
+    println("e state: " + state);
     if(state > 1){
       tint(255,255,255,255);
       image(level1Topper,0,0);
@@ -317,7 +328,7 @@ void draw() {
   } else if(state == 4){
     playVideo(myMovie4);
   }
-    
+    println("f state: " + state);
   float proportion = (prevSpeed - speedMin)/(speedMax-speedMin);
     color c = color(0,255,0);
     if(proportion > 0.6){
@@ -329,12 +340,23 @@ void draw() {
   //If the mouse is off screen, indicate which direction   
   int newPartX = mouseX;
   int newPartY = mouseY;
-  
+  println("g state: " + state);
   //Had screen inverted when I wrote this, hence the 800-? stuff
-  if(newPartX > 800-184) newPartX = 800-184;
-  if(newPartX < 800-317) newPartX = 800-317;
-  if(newPartY < 312) newPartY = 312;
-  if(newPartY > 576) newPartY = 576;
+  if(state <= 1){
+    if(newPartX > 800-184) newPartX = 800-184;
+    if(newPartX < 800-317) newPartX = 800-317;
+    if(newPartY < 312) newPartY = 312;
+    if(newPartY > 576) newPartY = 576;
+  } else if(state <= 3){
+    //This is the tricky case... 
+    if(newPartY < 324) newPartY = 324;
+    if(newPartY > 570) newPartY = 570;
+    if(newPartX >= 182 && newPartY >= 324 && newPartY <= 570){
+      float xCutoff = 238 + (14*(newPartY-324))/248;
+      if(newPartX > xCutoff) newPartX = (int)xCutoff;
+    }
+    if(newPartX < 182) newPartX = 182;
+  }
   
   ps.addParticle(newPartX,newPartY,c);
   ps.run();
@@ -345,9 +367,9 @@ void draw() {
     
 }
 
-void playVideo(Movie myMovie){
-  float totalSeconds = myMovie.duration();               //Movie length in seconds     
-  float timeLeft = myMovie.duration() - myMovie.time();  //Seconds left in the movie
+void playVideo(Movie mm){
+  float totalSeconds = mm.duration();               //Movie length in seconds     
+  float timeLeft = mm.duration() - mm.time();  //Seconds left in the movie
   float time;                                            //used in calculating the faderate
   boolean fadingOut = false;
   float trans = 255;
@@ -367,7 +389,7 @@ void playVideo(Movie myMovie){
   }
 
   tint(255,255,255,trans);     //Tints the current frame
-  image(myMovie,0,0);                     //Displays the current frame
+  image(mm,0,0);                     //Displays the current frame
 }
 
 void endStateZero(){
@@ -378,12 +400,12 @@ void endStateZero(){
 
 void endStateTwo(){
   state = 3;
-  myMovie2.jump(myMovie.duration());
+  myMovie2.jump(myMovie2.duration());
 }
 
 void endStateFour(){
   state = 5;
-  myMovie4.jump(myMovie.duration());
+  myMovie4.jump(myMovie4.duration());
 }
 
 void movieEvent(Movie m) {
