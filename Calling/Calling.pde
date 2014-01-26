@@ -8,7 +8,7 @@ Movie myMovie2;
 Movie myMovie4;
 
 Minim minim;
-AudioPlayer birds1;
+//AudioPlayer birds1;
 AudioPlayer[] bells = new AudioPlayer[11];
 int currentBell = 0;
 AudioPlayer soundtrack;
@@ -66,7 +66,7 @@ void setup() {
   noCursor();
   
   state = 0;
-  lastSuccess = 40;
+  lastSuccess = 0;
   lastMouseX = mouseX;
   lastMouseY = mouseY;
   
@@ -98,7 +98,7 @@ void setup() {
  // loadFile will look in all the same places as loadImage does.
   // this means you can find files that are in the data folder and the 
   // sketch folder. you can also pass an absolute path, or a URL.
-  birds1 = minim.loadFile("birdsChirping1.mp3");
+  //birds1 = minim.loadFile("birdsChirping1.mp3");
   bells[0] = minim.loadFile("bell_0.wav");
   bells[1] = minim.loadFile("bell_1.wav");
   bells[2] = minim.loadFile("bell_2.wav");
@@ -134,8 +134,8 @@ void gameRestart(){
   curMilli = millis();
   lastTrailMilli = millis();
   //Play until end of movie
-  birds1.rewind();
-  birds1.loop();
+  //birds1.rewind();
+  //birds1.loop();
   soundtrack.rewind();
   soundtrack.loop();
 }
@@ -221,7 +221,7 @@ void doWin(){
 }
 
 void draw() {  
-    background(255);
+    background(0);
     println("a state: " + state);
     if(lastSuccess >= numPiecesInLevel[state/2]){
       state++;
@@ -403,7 +403,7 @@ void playVideo(Movie mm){
 
 void endStateZero(){
   state = 1;
-  birds1.pause();
+  //birds1.pause();
   myMovie.jump(myMovie.duration());
 }
 
