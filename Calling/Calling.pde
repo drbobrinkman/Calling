@@ -56,6 +56,8 @@ int lastTrailMilli=0;
 PImage maskImg;
 PImage[] brickImgs;
 PImage level1Topper;
+PImage[] btbricks;
+PImage btcupola;
 
 towerPart[] mTowerParts1 = null;
 
@@ -90,6 +92,12 @@ void setup() {
   brickImgs[9] = loadImage("bricks_9.png");
   brickImgs[10] = loadImage("bricks_10.png");
   brickImgs[11] = loadImage("bricks_11.png");
+  
+  btbricks = new PImage[32];
+  for(int i=0;i<btbricks.length;i++){
+    btbricks[i] = loadImage("btbricks_" +i+".png");
+  }
+  btcupola = loadImage("bt_cupola.png");
   
   makeTowerParts();
 
