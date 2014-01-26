@@ -15,7 +15,7 @@ int currentBell = 0;
 AudioPlayer soundtrack;
 
 
-int[] numPiecesInLevel = {42, 32, 40};
+int[] numPiecesInLevel = {42, 32, 56,5};
 
 ParticleSystem ps;
 
@@ -24,7 +24,7 @@ int maxParticles = 10;
 int lastTimePunished=0;
 
 //Constants
-static float speedMax=25.0;
+float speedMax=40.0;
 static float speedMin=1.0;
 static int baseTimePerBlock = 5000;
 int timePerBlock = baseTimePerBlock; //in millis
@@ -60,9 +60,14 @@ PImage[] brickImgs;
 PImage level1Topper;
 PImage[] btbricks;
 PImage btcupola;
+PImage btwindows;
+PImage[] p_bricks;
+PImage p_clock;
+PImage p_main;
 
 towerPart[] mTowerParts1 = null;
 towerPart[] mTowerParts2 = null;
+towerPart[] mTowerParts3 = null;
 
 void setup() {
   //Projector native resolution in 800x600
@@ -101,6 +106,14 @@ void setup() {
     btbricks[i] = loadImage("btbricks_" +i+".png");
   }
   btcupola = loadImage("bt_cupola.png");
+  btwindows = loadImage("beta windows.png");
+  
+  p_bricks = new PImage[55];
+  for(int i=0;i<p_bricks.length;i++){
+    p_bricks[i] = loadImage("p_brick" +i+".png");
+  }
+  p_clock = loadImage("p_clock.png");
+  p_main = loadImage("p_main.png");
   
   makeTowerParts();
 
@@ -209,6 +222,18 @@ void makeTowerParts(){
     int index = (int)random(i,mTowerParts2.length);
     mTowerParts2[i] = mTowerParts2[index];
     mTowerParts2[index] = t;
+  }
+  
+  mTowerParts3 = new towerPart[56];
+  for(int i=0;i<mTowerParts3.length-1;i++){
+    mTowerParts3[i] = new towerPart(0,0,509,306,p_bricks[i]);
+  }
+  mTowerParts3[55] = new towerPart(0,0,509,306,p_clock);
+  for(int i=0;i<mTowerParts3.length; i++){
+    towerPart t = mTowerParts3[i];
+    int index = (int)random(i,mTowerParts3.length-1);
+    mTowerParts3[i] = mTowerParts3[index];
+    mTowerParts3[index] = t;
   }
 }
 
@@ -328,8 +353,24 @@ void draw() {
          }
         }
       }
+    } else if(state == 5){
+      if(lastSuccess < mTowerParts3.length){
+        //Get the pixel color at the current mouse location
+        if(oldPartX < mTowerParts3[lastSuccess].w && oldPartY < mTowerParts3[lastSuccess].h){
+          //Mouse is inside the picture, at least
+          color c = mTowerParts3[lastSuccess].img.get(oldPartX,oldPartY);
+          if(alpha(c) > 0){
+           lastSuccess += 1;
+           bells[currentBell].rewind();
+           bells[currentBell].play();
+           currentBell = (currentBell+1)%bells.length;
+           curMilli = millis();
+         }
+        }
+      }
     }
 
+  if(state >= 1){
     for(int i=0;i<mTowerParts1.length;i++){
       /*if(mTowerParts1[i] != null){
         image(mTowerParts1[i].img,mTowerParts1[i].x,mTowerParts1[i].y,mTowerParts1[i].w,mTowerParts1[i].h);
@@ -356,6 +397,7 @@ void draw() {
       }
       
     }
+  }
     if(state >= 3){
       for(int i=0;i<mTowerParts2.length;i++){
         /*if(mTowerParts1[i] != null){
@@ -363,27 +405,63 @@ void draw() {
         }*/
         
         if(state > 3){
-          tint(255,144,144); //Red is done
+          tint(255,96,96); //Red is done
           image(mTowerParts2[i].img,mTowerParts2[i].x,mTowerParts2[i].y,mTowerParts2[i].w,mTowerParts2[i].h);
         } else if(lastSuccess == 0 && (i == 0 /*|| i == 1*/)){
-          tint(96,255,96);
+          tint(64,255,64);
           image(mTowerParts2[i].img,mTowerParts2[i].x,mTowerParts2[i].y,mTowerParts2[i].w,mTowerParts2[i].h);
         } else if(i < lastSuccess){
           //If the block's time has passed, draw it solid.
-          tint(255,144,144); //Red is done
+          tint(255,96,96); //Red is done
           image(mTowerParts2[i].img,mTowerParts2[i].x,mTowerParts2[i].y,mTowerParts2[i].w,mTowerParts2[i].h);
         } else if ((i == lastSuccess /*|| i == lastSuccess+1*/) && millis()-curMilli < timePerBlock){
           //Time almost up
           float timeLeft = millis()-curMilli;
           float trans = 255 - 255*timeLeft/timePerBlock;
-          tint(255-trans,255,96,trans);
+          tint(255-trans,255,64,trans);
           image(mTowerParts2[i].img,mTowerParts2[i].x,mTowerParts2[i].y,mTowerParts2[i].w,mTowerParts2[i].h);
         } else {
           //do nothing
         }
       }
-      
     }
+    
+    if(state >= 5){
+      for(int i=0;i<mTowerParts3.length;i++){
+        /*if(mTowerParts3[i] != null){
+          image(mTowerParts3[i].img,mTowerParts3[i].x,mTowerParts3[i].y,mTowerParts3[i].w,mTowerParts3[i].h);
+        }*/
+        
+        if(state > 5){
+          if(i != 55){
+            tint(255,96,96); //Red is done
+          } else {
+            tint(255,255,255);
+          }
+          image(mTowerParts3[i].img,mTowerParts3[i].x,mTowerParts3[i].y,mTowerParts3[i].w,mTowerParts3[i].h);
+        } else if(lastSuccess == 0 && (i == 0 /*|| i == 1*/)){
+          tint(64,255,64);
+          image(mTowerParts3[i].img,mTowerParts3[i].x,mTowerParts3[i].y,mTowerParts3[i].w,mTowerParts3[i].h);
+        } else if(i < lastSuccess){
+          //If the block's time has passed, draw it solid.
+          if(i != 55){
+            tint(255,96,96); //Red is done
+          } else {
+            tint(255,255,255);
+          }
+          image(mTowerParts3[i].img,mTowerParts3[i].x,mTowerParts3[i].y,mTowerParts3[i].w,mTowerParts3[i].h);
+        } else if ((i == lastSuccess /*|| i == lastSuccess+1*/) && millis()-curMilli < timePerBlock){
+          //Time almost up
+          float timeLeft = millis()-curMilli;
+          float trans = 255 - 255*timeLeft/timePerBlock;
+          tint(255-trans,255,64,trans);
+          image(mTowerParts3[i].img,mTowerParts3[i].x,mTowerParts3[i].y,mTowerParts3[i].w,mTowerParts3[i].h);
+        } else {
+          //do nothing
+        }
+      }
+    }
+    
     if(state > 1){
       tint(255,255,255,255);
       image(level1Topper,0,0);
@@ -391,6 +469,11 @@ void draw() {
     if(state > 3){
       tint(255,255,255,255);
       image(btcupola,0,0);
+      image(btwindows,0,10);
+    }
+    if(state > 5){
+      tint(255,255,255,255);
+      image(p_main,0,0);
     }
   
   if(state == 0){
@@ -429,19 +512,19 @@ void draw() {
          if(newPartX < xCutoff) {newPartX = xCutoff;gotChaged=true;}
        } 
   } else if(state <= 3){
-    if(newPartY < 324) {newPartY = 324;gotChaged=true;}
+    if(newPartY < 317) {newPartY = 317;gotChaged=true;}
     if(newPartY > 570) {newPartY = 570;gotChaged=true;}
-    if(newPartX >= 182 && newPartY >= 324 && newPartY <= 570){
-      float xCutoff = 238 + (14*(newPartY-324))/248;
+    if(newPartX >= 182 && newPartY >= 317 && newPartY <= 570){
+      float xCutoff = 238 + (14*(newPartY-317))/255;
       if(newPartX > xCutoff) {newPartX = (int)xCutoff;gotChaged=true;}
     }
     if(newPartX < 182) {newPartX = 182;gotChaged=true;}
   } else if(state <= 5){
     if(newPartY < 104) {newPartY = 104;gotChaged=true;}
     if(newPartY > 272) {newPartY = 272;gotChaged=true;}
-    if(newPartX > 479) {newPartX = 479;gotChaged=true;}
+    if(newPartX > 490) {newPartX = 490;gotChaged=true;}
     
-    if(newPartX <= 479 && newPartY >= 104 && newPartY <= 272){
+    if(newPartX <= 490 && newPartY >= 104 && newPartY <= 272){
       float xCutoff = 415 - (14*(newPartY-104))/168;
       if(newPartX < xCutoff) {newPartX = (int)xCutoff;gotChaged=true;}
     }  
@@ -471,8 +554,10 @@ void playVideo(Movie mm){
   
   if(timeLeft < 3){   //If there are 3 seconds left in the movie, then begin to fade out
     trans = 255*timeLeft/3;
-  } else if(mm.time() < 3){
-    trans = 255*mm.time()/3;
+  } else if(mm.time() < 1.5){
+    trans = 0; 
+  } else if(mm.time() < 1.5+3){
+    trans = 255*(mm.time()-1.5)/3;
   }
   
   if(timeLeft < 0.1){
@@ -514,6 +599,7 @@ void endStateZero(){
 
 void endStateTwo(){
   state = 3;
+  speedMax = 20.0;
   myMovie2.jump(myMovie2.duration());
 }
 
@@ -522,10 +608,11 @@ void endStateFour(){
   myMovie4.jump(myMovie4.duration());
 }
 
+/*
 void endStateSix(){
   state = 0;
   myMovie6.jump(myMovie6.duration());
-}
+}*/
 
 void movieEvent(Movie m) {
   m.read();                              //reads in the next frame
