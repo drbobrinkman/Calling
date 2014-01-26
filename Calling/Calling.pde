@@ -66,7 +66,7 @@ void setup() {
   noCursor();
   
   state = 0;
-  lastSuccess = 40;
+  lastSuccess = 0;
   lastMouseX = mouseX;
   lastMouseY = mouseY;
   
@@ -395,7 +395,14 @@ void playVideo(Movie mm){
   }
   int w = (int)(wscale*hscale*mm.width);
   int h = (int)(wscale*hscale*mm.height);
-  image(mm,0,0,w,h);                     //Displays the current frame
+  
+  if(state <= 1){
+    image(mm,0,0,w,h); 
+  } else if(state <= 3){
+    image(mm,-(w-800),0,w,h);                     //Displays the current frame
+  } else {
+    image(mm,0,0,w,h); 
+  }
 }
 
 void endStateZero(){
