@@ -363,20 +363,20 @@ void draw() {
         }*/
         
         if(state > 3){
-          tint(255,144,144); //Red is done
+          tint(255,96,96); //Red is done
           image(mTowerParts2[i].img,mTowerParts2[i].x,mTowerParts2[i].y,mTowerParts2[i].w,mTowerParts2[i].h);
         } else if(lastSuccess == 0 && (i == 0 /*|| i == 1*/)){
-          tint(96,255,96);
+          tint(64,255,64);
           image(mTowerParts2[i].img,mTowerParts2[i].x,mTowerParts2[i].y,mTowerParts2[i].w,mTowerParts2[i].h);
         } else if(i < lastSuccess){
           //If the block's time has passed, draw it solid.
-          tint(255,144,144); //Red is done
+          tint(255,96,96); //Red is done
           image(mTowerParts2[i].img,mTowerParts2[i].x,mTowerParts2[i].y,mTowerParts2[i].w,mTowerParts2[i].h);
         } else if ((i == lastSuccess /*|| i == lastSuccess+1*/) && millis()-curMilli < timePerBlock){
           //Time almost up
           float timeLeft = millis()-curMilli;
           float trans = 255 - 255*timeLeft/timePerBlock;
-          tint(255-trans,255,96,trans);
+          tint(255-trans,255,64,trans);
           image(mTowerParts2[i].img,mTowerParts2[i].x,mTowerParts2[i].y,mTowerParts2[i].w,mTowerParts2[i].h);
         } else {
           //do nothing
