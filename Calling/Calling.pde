@@ -46,6 +46,8 @@ int lastSuccess;
 
 int lastMouseX;
 int lastMouseY;
+int oldPartX;
+int oldPartY;
 
 float prevSpeed;
 
@@ -314,9 +316,9 @@ void draw() {
     } else if(state == 3){
       if(lastSuccess < mTowerParts2.length){
         //Get the pixel color at the current mouse location
-        if(mouseX < mTowerParts2[lastSuccess].w && mouseY < mTowerParts2[lastSuccess].h){
+        if(oldPartX < mTowerParts2[lastSuccess].w && oldPartY < mTowerParts2[lastSuccess].h){
           //Mouse is inside the picture, at least
-          color c = mTowerParts2[lastSuccess].img.get(mouseX,mouseY);
+          color c = mTowerParts2[lastSuccess].img.get(oldPartX,oldPartY);
           if(alpha(c) > 0){
            lastSuccess += 1;
            bells[currentBell].rewind();
@@ -414,36 +416,43 @@ void draw() {
   int newPartY = mouseY;
 
   //Had screen inverted when I wrote this, hence the 800-? stuff
+  boolean gotChaged = false;
   if(state <= 1){
-    if(newPartY < 362) newPartY = 362;
-    if(newPartY > 575) newPartY = 575;
+    if(newPartY < 362) {newPartY = 362;gotChaged=true;}
+    if(newPartY > 575) {newPartY = 575;gotChaged=true;}
     
-    if(newPartX > 610) newPartX = 610;
+    if(newPartX > 610) {newPartX = 610;gotChaged=true;}
     if(newPartX <= 610 && 
        newPartY >= 362 &&
        newPartY <= 575) {
          int xCutoff = 496 - (14*(newPartY-362)/213);
-         if(newPartX < xCutoff) newPartX = xCutoff;
+         if(newPartX < xCutoff) {newPartX = xCutoff;gotChaged=true;}
        } 
   } else if(state <= 3){
-    if(newPartY < 324) newPartY = 324;
-    if(newPartY > 570) newPartY = 570;
+    if(newPartY < 324) {newPartY = 324;gotChaged=true;}
+    if(newPartY > 570) {newPartY = 570;gotChaged=true;}
     if(newPartX >= 182 && newPartY >= 324 && newPartY <= 570){
       float xCutoff = 238 + (14*(newPartY-324))/248;
-      if(newPartX > xCutoff) newPartX = (int)xCutoff;
+      if(newPartX > xCutoff) {newPartX = (int)xCutoff;gotChaged=true;}
     }
-    if(newPartX < 182) newPartX = 182;
+    if(newPartX < 182) {newPartX = 182;gotChaged=true;}
   } else if(state <= 5){
-    if(newPartY < 104) newPartY = 104;
-    if(newPartY > 272) newPartY = 272;
-    if(newPartX > 479) newPartX = 479;
+    if(newPartY < 104) {newPartY = 104;gotChaged=true;}
+    if(newPartY > 272) {newPartY = 272;gotChaged=true;}
+    if(newPartX > 479) {newPartX = 479;gotChaged=true;}
     
     if(newPartX <= 479 && newPartY >= 104 && newPartY <= 272){
       float xCutoff = 415 - (14*(newPartY-104))/168;
-      if(newPartX < xCutoff) newPartX = (int)xCutoff;
+      if(newPartX < xCutoff) {newPartX = (int)xCutoff;gotChaged=true;}
     }  
   }
   
+  oldPartX = newPartX;
+  oldPartY = newPartY;
+  //White means your cursor is off-scream
+  if(gotChaged){
+    c = color(255);
+  }
   ps.addParticle(newPartX,newPartY,c);
   ps.run();
     
