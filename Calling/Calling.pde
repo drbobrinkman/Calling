@@ -15,7 +15,7 @@ int currentBell = 0;
 AudioPlayer soundtrack;
 
 
-int[] numPiecesInLevel = {42, 32, 56};
+int[] numPiecesInLevel = {42, 32, 56,5};
 
 ParticleSystem ps;
 
@@ -77,7 +77,7 @@ void setup() {
   noCursor();
   
   state = 0;
-  lastSuccess = 40;
+  lastSuccess = 0;
   lastMouseX = mouseX;
   lastMouseY = mouseY;
   
@@ -520,9 +520,9 @@ void draw() {
   } else if(state <= 5){
     if(newPartY < 104) {newPartY = 104;gotChaged=true;}
     if(newPartY > 272) {newPartY = 272;gotChaged=true;}
-    if(newPartX > 484) {newPartX = 484;gotChaged=true;}
+    if(newPartX > 490) {newPartX = 490;gotChaged=true;}
     
-    if(newPartX <= 484 && newPartY >= 104 && newPartY <= 272){
+    if(newPartX <= 490 && newPartY >= 104 && newPartY <= 272){
       float xCutoff = 415 - (14*(newPartY-104))/168;
       if(newPartX < xCutoff) {newPartX = (int)xCutoff;gotChaged=true;}
     }  
@@ -603,10 +603,11 @@ void endStateFour(){
   myMovie4.jump(myMovie4.duration());
 }
 
+/*
 void endStateSix(){
   state = 0;
   myMovie6.jump(myMovie6.duration());
-}
+}*/
 
 void movieEvent(Movie m) {
   m.read();                              //reads in the next frame
