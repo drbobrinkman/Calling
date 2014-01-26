@@ -1,3 +1,7 @@
+//This game was created for the Global Game Jam 2014 by 
+// Daltin, Bo, Nate, and Ryan. It is released under the
+// http://creativecommons.org/licenses/by-nc-sa/3.0/ license
+
 //Run using Sketch->Present in Processing, to get fullscreen
 //Play with XBox controller, using ControllerMate to create virtual mouse
 import ddf.minim.*; //Minim is the audio package for processing
