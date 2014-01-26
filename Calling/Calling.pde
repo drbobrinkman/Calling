@@ -370,6 +370,7 @@ void draw() {
       }
     }
 
+  if(state >= 1){
     for(int i=0;i<mTowerParts1.length;i++){
       /*if(mTowerParts1[i] != null){
         image(mTowerParts1[i].img,mTowerParts1[i].x,mTowerParts1[i].y,mTowerParts1[i].w,mTowerParts1[i].h);
@@ -396,6 +397,7 @@ void draw() {
       }
       
     }
+  }
     if(state >= 3){
       for(int i=0;i<mTowerParts2.length;i++){
         /*if(mTowerParts1[i] != null){
@@ -552,8 +554,10 @@ void playVideo(Movie mm){
   
   if(timeLeft < 3){   //If there are 3 seconds left in the movie, then begin to fade out
     trans = 255*timeLeft/3;
-  } else if(mm.time() < 3){
-    trans = 255*mm.time()/3;
+  } else if(mm.time() < 1.5){
+    trans = 0; 
+  } else if(mm.time() < 1.5+3){
+    trans = 255*(mm.time()-1.5)/3;
   }
   
   if(timeLeft < 0.1){
