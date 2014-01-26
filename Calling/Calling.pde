@@ -60,6 +60,7 @@ PImage[] brickImgs;
 PImage level1Topper;
 PImage[] btbricks;
 PImage btcupola;
+PImage btwindows;
 
 towerPart[] mTowerParts1 = null;
 towerPart[] mTowerParts2 = null;
@@ -101,6 +102,7 @@ void setup() {
     btbricks[i] = loadImage("btbricks_" +i+".png");
   }
   btcupola = loadImage("bt_cupola.png");
+  btwindows = loadImage("beta windows.png");
   
   makeTowerParts();
 
@@ -391,6 +393,7 @@ void draw() {
     if(state > 3){
       tint(255,255,255,255);
       image(btcupola,0,0);
+      image(btwindows,0,10);
     }
   
   if(state == 0){
