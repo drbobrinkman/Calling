@@ -66,7 +66,7 @@ void setup() {
   noCursor();
   
   state = 0;
-  lastSuccess = 0;
+  lastSuccess = 40;
   lastMouseX = mouseX;
   lastMouseY = mouseY;
   
@@ -122,6 +122,9 @@ void setup() {
   myMovie2.noLoop();
   myMovie4 = new Movie(this, "Stock Footage of the sun shining in a silhouetted grove of trees in Israel.mp4");
   myMovie4.noLoop();
+  myMovie.volume(0);
+  myMovie2.volume(0);
+  myMovie4.volume(0);
   
   gameRestart();
 }
@@ -215,14 +218,9 @@ void doFail(){
   prevSpeed = 0;
 }
 
-void doWin(){
-    state = 2;
-    lastSuccess = 0;
-}
-
 void draw() {  
     background(0);
-    println("a state: " + state);
+    
     if(lastSuccess >= numPiecesInLevel[state/2]){
       state++;
       lastSuccess = 0;
@@ -234,8 +232,6 @@ void draw() {
         myMovie4.play();
       }
     }
-    
-    println("b state: " + state);
     
     timePerBlock = baseTimePerBlock - lastSuccess*15;
     
@@ -262,7 +258,6 @@ void draw() {
       lastMouseY = mouseY;
     }
     
-    println("c state: " + state); 
     if((millis()-curMilli) > timePerBlock){
       //failed
       doFail();
@@ -285,7 +280,7 @@ void draw() {
          currentBell = (currentBell+1)%bells.length;
          curMilli = millis();
        }
-    println("d state: " + state);
+
     for(int i=0;i<mTowerParts1.length;i++){
       /*if(mTowerParts1[i] != null){
         image(mTowerParts1[i].img,mTowerParts1[i].x,mTowerParts1[i].y,mTowerParts1[i].w,mTowerParts1[i].h);
@@ -312,7 +307,7 @@ void draw() {
       }
       
     }
-    println("e state: " + state);
+    
     if(state > 1){
       tint(255,255,255,255);
       image(level1Topper,0,0);
@@ -325,7 +320,7 @@ void draw() {
   } else if(state == 4){
     playVideo(myMovie4);
   }
-    println("f state: " + state);
+
   float proportion = (prevSpeed - speedMin)/(speedMax-speedMin);
     color c = color(0,255,0);
     if(proportion > 0.6){
@@ -337,7 +332,7 @@ void draw() {
   //If the mouse is off screen, indicate which direction   
   int newPartX = mouseX;
   int newPartY = mouseY;
-  println("g state: " + state);
+
   //Had screen inverted when I wrote this, hence the 800-? stuff
   if(state <= 1){
     if(newPartX > 800-184) newPartX = 800-184;
