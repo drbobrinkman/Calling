@@ -217,6 +217,7 @@ void doFail(){
 
 void doWin(){
     state = 2;
+    lastSuccess = 0;
 }
 
 void draw() {  
@@ -283,10 +284,6 @@ void draw() {
          bells[currentBell].play();
          currentBell = (currentBell+1)%bells.length;
          curMilli = millis();
-         
-         if(lastSuccess >= mTowerParts1.length){
-           doWin();
-         }
        }
     println("d state: " + state);
     for(int i=0;i<mTowerParts1.length;i++){
@@ -376,6 +373,8 @@ void playVideo(Movie mm){
   
   if(timeLeft < 3){   //If there are 3 seconds left in the movie, then begin to fade out
     trans = 255*timeLeft/3;
+  } else if(mm.time() < 3){
+    trans = 255*mm.time()/3;
   }
   
   if(timeLeft < 0.1){
@@ -389,7 +388,17 @@ void playVideo(Movie mm){
   }
 
   tint(255,255,255,trans);     //Tints the current frame
-  image(mm,0,0);                     //Displays the current frame
+  float wscale = 1.0;
+  float hscale = 1.0;
+  if(mm.width < 800){
+    wscale = 800.0/mm.width;
+  }
+  if(mm.height*wscale < 600){
+    hscale = 600.0/mm.height;
+  }
+  int w = (int)(wscale*hscale*mm.width);
+  int h = (int)(wscale*hscale*mm.height);
+  image(mm,0,0,w,h);                     //Displays the current frame
 }
 
 void endStateZero(){
