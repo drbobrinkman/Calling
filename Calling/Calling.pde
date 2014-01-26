@@ -15,7 +15,7 @@ int currentBell = 0;
 AudioPlayer soundtrack;
 
 
-int[] numPiecesInLevel = {42, 30, 40};
+int[] numPiecesInLevel = {42, 32, 40};
 
 ParticleSystem ps;
 
@@ -426,7 +426,6 @@ void draw() {
          if(newPartX < xCutoff) newPartX = xCutoff;
        } 
   } else if(state <= 3){
-    //This is the tricky case... 
     if(newPartY < 324) newPartY = 324;
     if(newPartY > 570) newPartY = 570;
     if(newPartX >= 182 && newPartY >= 324 && newPartY <= 570){
@@ -434,6 +433,15 @@ void draw() {
       if(newPartX > xCutoff) newPartX = (int)xCutoff;
     }
     if(newPartX < 182) newPartX = 182;
+  } else if(state <= 5){
+    if(newPartY < 104) newPartY = 104;
+    if(newPartY > 272) newPartY = 272;
+    if(newPartX > 479) newPartX = 479;
+    
+    if(newPartX <= 479 && newPartY >= 104 && newPartY <= 272){
+      float xCutoff = 415 - (14*(newPartY-104))/168;
+      if(newPartX < xCutoff) newPartX = (int)xCutoff;
+    }  
   }
   
   ps.addParticle(newPartX,newPartY,c);
