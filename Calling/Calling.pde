@@ -227,9 +227,11 @@ void draw() {
       if(state == 2){
         myMovie2.jump(0);
         myMovie2.play();
+        myMovie2.volume(0);
       } else if(state == 4){
         myMovie4.jump(0);
         myMovie4.play();
+        myMovie4.volume(0);
       }
     }
     
