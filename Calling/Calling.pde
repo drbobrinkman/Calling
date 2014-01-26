@@ -24,7 +24,7 @@ int maxParticles = 10;
 int lastTimePunished=0;
 
 //Constants
-static float speedMax=25.0;
+float speedMax=40.0;
 static float speedMin=1.0;
 static int baseTimePerBlock = 5000;
 int timePerBlock = baseTimePerBlock; //in millis
@@ -595,6 +595,7 @@ void endStateZero(){
 
 void endStateTwo(){
   state = 3;
+  speedMax = 20.0;
   myMovie2.jump(myMovie2.duration());
 }
 
